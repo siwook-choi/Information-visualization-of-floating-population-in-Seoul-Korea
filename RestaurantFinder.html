@@ -10,13 +10,43 @@
 
 <body>
     <script type="text/javascript">
-        var name_hash = {};
-        d3.json("./code.json").then(function(p){
-            p.forEach(function(data){
-                name_hash[data.H_DNG_CD] = data.DO_NM + data.CT_NM + data.H_DNG_NM;
+        var enum_food = [
+            { id: 1, name: "韓国料理" },
+            { id: 2, name: "洋食" },
+            { id: 3, name: "アジア料理" },
+            { id: 4, name: "和食" },
+            { id: 5, name: "中国料理" },
+            { id: 6, name: "屋台料理" },
+            { id: 7, name: "カフェ" },
+            { id: 8, name: "バイキング" },
+            { id: 9, name: "etc" }
+        ];
+
+        var name_hash = [];
+        d3.json("./code.json").then(function (p) {
+            p.forEach(function (data) {
+                name_hash.push({ id: data.H_DNG_CD, name: data.DO_NM + data.CT_NM + data.H_DNG_NM });
             });
         });
-        console.log(name_hash);
+        name_hash.forEach(function (address) {
+            enum_food.forEach(function (food) {
+                var url = "https://store.naver.com/restaurants/list?filterId=r09110115&menu="
+                    + food.id + "&query=" + address.address + "%20%EB%A7%9B%EC%A7%91";
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function (aEvt) {
+                    if (xhr.readyState === 4) {
+                        if (xhr.state === 200) {
+                            
+                        }
+                        else {
+                            console.log("Error loading page");
+                        }
+                    }
+                };
+                req.send(null);
+            });
+        });
     </script>
 </body>
 
