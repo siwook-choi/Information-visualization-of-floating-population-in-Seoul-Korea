@@ -22,13 +22,13 @@
             { id: 9, name: "etc" }
         ];
 
-        var name_hash = [];
+        var name_list = [];
         d3.json("./code.json").then(function (p) {
             p.forEach(function (data) {
-                name_hash.push({ id: data.H_DNG_CD, name: data.DO_NM + data.CT_NM + data.H_DNG_NM });
+                name_list.push({ id: data.H_DNG_CD, name: data.DO_NM + data.CT_NM + data.H_DNG_NM });
             });
         });
-        name_hash.forEach(function (address) {
+        name_list.forEach(function (address) {
             enum_food.forEach(function (food) {
                 var url = "https://store.naver.com/restaurants/list?filterId=r09110115&menu="
                     + food.id + "&query=" + address.address + "%20%EB%A7%9B%EC%A7%91";
@@ -37,14 +37,17 @@
                 xhr.onreadystatechange = function (aEvt) {
                     if (xhr.readyState === 4) {
                         if (xhr.state === 200) {
-                            
+                            var str = xhr.responseText;
+                            var int_start = str.indexOf('<em class="count">')+18;
+                            parseInt(str.substr(int_start, 7));
+                            console.log(parseInt);
                         }
                         else {
                             console.log("Error loading page");
                         }
                     }
                 };
-                req.send(null);
+                xhr.send(null);
             });
         });
     </script>
