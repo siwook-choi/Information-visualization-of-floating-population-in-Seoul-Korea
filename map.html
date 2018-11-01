@@ -7,6 +7,7 @@
 	 <script type="text/javascript" src="./lib/d3.js"></script>
 	<script src="./lib/d3.js" charset="utf-8"></script>
         <script src="./lib/topojson.js" charsdet="utf-8"></script>
+	<script src="./code.json" charsdet="utf-8"></script>
       </head>
       <body>
 <script type="text/javascript">
@@ -14,18 +15,42 @@ console.log("hello1");
 var width = 960;
 var height = 500;
 var svg = d3.select("body").append("svg").attr("width",width).attr("height",height);
+var color = d3.scaleLinear().domain([4000,50000]).range([255,0]);
+
 console.log("hello2");
+var poptotalHash={};
+d3.csv("./pop_data20181024_23.csv",function(data){
+	//total population variable
+	//2018/10/24 23時だけ
+	console.log(data.date);
+	console.log(data.code);
+	poptotalHash[data.code]=data.pop_total;
+	
+});
+	console.log(poptotalHash);
+var switchcodeHash={};
+SubCode.Data.forEach(function(d)
+{	//H_SDNG for map H_DNG for pop
+	
+	switchcodeHash[d.H_SDNG_CD]=d.H_DNG_CD;
+}
+);
+	console.log(switchcodeHash);
+
 d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function(data){
-	console.log(data.objects.seoul_submunicipalities_geo);
-	console.log("hello3");
+	console.log(data.objects);
 	var seoul=topojson.feature(data,data.objects.seoul_submunicipalities_geo);
 	console.log("hello4");
 	var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width/2,height/2]).scale(70000);
 	console.log("hello5");
 	var path = d3.geoPath().projection(projection);	
 	console.log("hello6");
+	console.log(seoul.features);
+	svg.selectAll("path").data(seoul.features).enter().append("path").attr("d",path).attr("fill",function(d){
+	return "rgb(255,"+Math.floor(color(poptotalHash[switchcodeHash[d.properties.code]]))+","+Math.floor(color(poptotalHash[switchcodeHash[d.properties.code]]))+")";
+}
+).attr("stroke","#333333").attr("stroke-width",0.5);
 	
-	svg.selectAll("path").data(seoul.features).enter().append("path").attr("d",path).attr("stroke","#333333").attr("stroke-width",0.5).attr("fill","white");
 	console.log("hello7");
 
 });
