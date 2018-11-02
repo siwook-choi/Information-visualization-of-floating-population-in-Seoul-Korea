@@ -15,43 +15,72 @@ var path = require('path');
 filePath = path.join(__dirname, 'code.json');
 
 var name_list = [];
-fs.readFile(filePath, { encoding: 'utf-8' }, function (err, data) {
-    if (!err) {
-        var jsonData = JSON.parse(data);
-        jsonData.forEach(function (d) {
-            name_list.push({ id: d["H_DNG_CD"], name: d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"] });
-        });
-    }
-    else {
-        console.log(err);
-    }
-    console.log(name_list);
-    var food_data = [];
-    const puppeteer = require('puppeteer');
-    //name_list.forEach(function (address) {
-    address = { id: 1110530, name: "서울종로구사직동" };
-    var food_number = {};
-    enum_food.forEach(function (food) {
-        var url = "https://store.naver.com/restaurants/list?filterId=r09110115&menu="
-            + food.id + "&query=" + address.address + "%20%EB%A7%9B%EC%A7%91";
+data = fs.readFileSync(filePath, { encoding: 'utf-8' });
 
-        food_number["H_DNG_CD"] = address.id;
-        (async () => {
-
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
-            await page.goto(url);
-
-            const text = await page.evaluate(() => document.body.innerHTML);
-            var int_start = text.indexOf('<em class="count">') + 18;
-            var restaurant_num = parseInt(text.substr(int_start, 7).replace(/,/g, ""));
-
-            food_number[food.id] = restaurant_num;
-
-            await browser.close();
-        })();
-    });
-    food_data.push(food_number);
-    console.log(food_data);
-    //});
+var jsonData = JSON.parse(data);
+jsonData.forEach(function (d) {
+    name_list.push({ id: d["H_DNG_CD"], name: d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"] });
 });
+
+
+var food_data = [];
+const puppeteer = require('puppeteer');
+var request_count = 0;
+var chrome_count = 0;
+
+getData();
+async function getData() {
+    for (address of name_list) {
+        var food_object = { 'id': address.id };
+        food_data.push(food_object);
+        for (food of enum_food) {
+
+            searchUrl(food, address, food_object);
+            async function searchUrl(food, address, food_object) {
+                var url = "https://store.naver.com/restaurants/list?filterId=r09110115&menu="
+                    + food.id + "&query=" + address.name + "%20%EB%A7%9B%EC%A7%91";
+                if (chrome_count > 9) {
+                    setTimeout(() => { searchUrl(food, address, food_object) }, 50);
+                    return;
+                }
+                try {
+                    chrome_count += 1;
+                    const browser = await puppeteer.launch();
+                    const page = await browser.newPage();
+                    await page.goto(url);
+
+                    const text = await page.evaluate(() => document.body.innerHTML);
+                    var int_start = text.indexOf('<em class="count">') + 18;
+                    var restaurant_num = parseInt(text.substr(int_start, 7).replace(/,/g, ""));
+
+                    await browser.close();
+                    request_count += 1;
+                    food_object[["menu_" + food.id]] = restaurant_num;
+                    chrome_count -= 1;
+
+                    console.log(request_count);
+                } catch (e) {
+                    console.log(e);
+                    food_object[["menu_" + food.id]] = -1;
+                    request_count += 1;
+                    chrome_count -= 1;
+                    console.log(request_count);
+                }
+            };
+
+        };
+    };
+}
+
+var timerId = setInterval(checkFinished, 1000);
+
+function checkFinished() {
+    if (request_count == name_list.length * enum_food.length) {
+        console.log(food_data);
+        fs.writeFile('food_data.json', JSON.stringify(food_data, null, '\t'), (err) => {
+            if (err)
+                console.log(err);
+        })
+        clearInterval(timerId);
+    }
+}
