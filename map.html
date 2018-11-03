@@ -1,60 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-         <meta charset="utf-8">
-         <title>D3 Test</title>
-	 <script type="text/javascript" src="./lib/d3.js"></script>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<title>D3 Test</title>
+	<script type="text/javascript" src="./lib/d3.js"></script>
 	<script src="./lib/d3.js" charset="utf-8"></script>
-        <script src="./lib/topojson.js" charsdet="utf-8"></script>
-	<script src="./code.json" charsdet="utf-8"></script>
-      </head>
-      <body>
-<script type="text/javascript">
-console.log("hello1");
-var width = 960;
-var height = 500;
-var svg = d3.select("body").append("svg").attr("width",width).attr("height",height);
-var color = d3.scaleLinear().domain([4000,50000]).range([255,0]);
+	<script src="./lib/topojson.js" charsdet="utf-8"></script>
+	<script src='./code.json' charsdet="utf-8"></script>
+</head>
 
-console.log("hello2");
-var poptotalHash={};
-d3.csv("./pop_data20181024_23.csv",function(data){
-	//total population variable
-	//2018/10/24 23時だけ
-	console.log(data.date);
-	console.log(data.code);
-	poptotalHash[data.code]=data.pop_total;
-	
-});
-	console.log(poptotalHash);
-var switchcodeHash={};
-SubCode.Data.forEach(function(d)
-{	//H_SDNG for map H_DNG for pop
-	
-	switchcodeHash[d.H_SDNG_CD]=d.H_DNG_CD;
-}
-);
-	console.log(switchcodeHash);
+<body>
+	<script type="text/javascript">
+		var width = 960;
+		var height = 500;
+		var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+		var color = d3.scaleLinear().domain([4000, 50000]).range([255, 0]);
 
-d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function(data){
-	console.log(data.objects);
-	var seoul=topojson.feature(data,data.objects.seoul_submunicipalities_geo);
-	console.log("hello4");
-	var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width/2,height/2]).scale(70000);
-	console.log("hello5");
-	var path = d3.geoPath().projection(projection);	
-	console.log("hello6");
-	console.log(seoul.features);
-	svg.selectAll("path").data(seoul.features).enter().append("path").attr("d",path).attr("fill",function(d){
-	return "rgb(255,"+Math.floor(color(poptotalHash[switchcodeHash[d.properties.code]]))+","+Math.floor(color(poptotalHash[switchcodeHash[d.properties.code]]))+")";
-}
-).attr("stroke","#333333").attr("stroke-width",0.5);
-	
-	console.log("hello7");
+		var popTotalHash, foodDataHash, switchCodeHash;
+		init(popTotalHash, foodDataHash, switchCodeHash);
 
-});
-</script>
+
+		d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
+
+			var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
+			var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width / 2, height / 2]).scale(70000);
+			var path = d3.geoPath().projection(projection);
+			svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path).attr("fill", function (d) {
+				return "rgb(255," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]])) + "," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]])) + ")";
+			}
+			).attr("stroke", "#333333").attr("stroke-width", 0.5);
+
+		});
+
+		async function init(popTotalHash, foodDataHash, switchCodeHash) {
+
+			var cityNameHash = {};
+			var switchCodeHash = {};
+			var codeData = await d3.json("./code.json");
+			for (d of codeData) {
+				cityNameHash[d["H_DNG_CD"]] = d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"];
+				switchCodeHash[d["H_DNG_CD"]] = d["H_SDNG_CD"];
+			}
+
+
+			var popTotalHash = {};
+			await d3.csv("./pop_data.csv").then((d)=>{
+				popTotalHash[d.code] = d.pop_total;
+			});
+			console.log(popTotalHash);
+		}
+	</script>
 </body>
 
 </html>
