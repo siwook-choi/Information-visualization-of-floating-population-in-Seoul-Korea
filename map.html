@@ -46,9 +46,12 @@
 
 
 			var popTotalHash = {};
-			await d3.csv("./pop_data.csv").then((d)=>{
+			var popData = await d3.tsv("./pop_data.csv");
+			for (d of popData){
 				popTotalHash[d.code] = d.pop_total;
-			});
+			}
+			console.log(cityNameHash);
+			console.log(switchCodeHash);
 			console.log(popTotalHash);
 		}
 	</script>
