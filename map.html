@@ -11,7 +11,7 @@
 	<script src='./code.json' charsdet="utf-8"></script>
 	<script src='./food_data.json' charsdet="utf-8"></script>
 	<script src="./lib/distribute/nouislider.min.js"></script>
-    <link rel="stylesheet" href="./distribute/nouislider.min.css">
+	<link rel="stylesheet" href="./distribute/nouislider.min.css">
 
 </head>
 
@@ -28,12 +28,9 @@
 				console.log(err);
 				return;
 			}
-			console.log(popDataHash);
-			console.log(cityDataHash);
-			console.log(foodDataHash);
-			console.log(switchCodeHash);
 
-
+			var slider_date = "20181024", slider_time = 12, slider_age_lower = 20, slider_age_upper = 30, select_box_gender = "man";
+			//these should be given by input
 
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 
@@ -41,17 +38,11 @@
 				var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width / 2, height / 2]).scale(70000);
 				var path = d3.geoPath().projection(projection);
 				svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path).attr("fill", function (d) {
-					if(Math.floor(color(popDataHash[20181024][23][switchCodeHash[d.properties.code]].pop_total))==NaN){
-						console.log(d.properties);
-					}
-					var a = "rgb(255," + Math.floor(color(popDataHash[20181024][23][switchCodeHash[d.properties.code]].pop_total
-						/cityDataHash[switchCodeHash[d.properties.code]].area)) + "," +
-						 Math.floor(color(popDataHash[20181024][23][switchCodeHash[d.properties.code]].pop_total / cityDataHash[switchCodeHash[d.properties.code]].area)) + ")";
-					if(a=="rgb(255,NaN,NaN)"){
-						console.log(d.properties);
-						console.log(switchCodeHash[d.properties.code]);
-					}
-					return a;
+					var pop = fetchData(switchCodeHash[d.properties.code], slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender);
+					return "rgb(255," +
+						Math.floor(color(pop)) +
+						"," + Math.floor(color(pop)) +
+						")";
 				}).attr("stroke", "#333333").attr("stroke-width", 0.5);
 
 			});
@@ -61,26 +52,28 @@
 			try {
 				cityAreaHash = {};
 				var areaData = await d3.tsv("./area.tsv");
-				for (d of areaData){
+				for (d of areaData) {
 					cityAreaHash[[d.CT_NM + d.H_DNG_NM]] = d.AREA;
 				}
 
 				var codeData = await d3.json("./code.json");
 				for (d of codeData) {
-					cityDataHash[d["H_DNG_CD"]] = {name:d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"],
-						area:cityAreaHash[d["CT_NM"] + d["H_DNG_NM"]]};
+					cityDataHash[d["H_DNG_CD"]] = {
+						name: d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"],
+						area: cityAreaHash[d["CT_NM"] + d["H_DNG_NM"]]
+					};
 					switchCodeHash[d["H_SDNG_CD"]] = d["H_DNG_CD"];
 				}
 
 				var popData = await d3.tsv("./pop_data.csv");
 				for (d of popData) {
-					if(popDataHash[d.code] == undefined){
+					if (popDataHash[d.code] == undefined) {
 						popDataHash[d.code] = {};
 					}
-					if(popDataHash[d.code][d.date] == undefined){
+					if (popDataHash[d.code][d.date] == undefined) {
 						popDataHash[d.code][d.date] = {};
 					}
-					popDataHash[d.code][d.date][d.time] = {pop_total:d.pop_total,pop_man_0_9:d.pop_man_0_9,pop_man_10_14:d.pop_man_10_14,pop_man_15_19:d.pop_man_15_19,pop_man_20_24:d.pop_man_20_24,pop_man_25_29:d.pop_man_25_29,pop_man_30_34:d.pop_man_30_34,pop_man_35_39:d.pop_man_35_39,pop_man_40_44:d.pop_man_40_44,pop_man_45_49:d.pop_man_45_49,pop_man_50_54:d.pop_man_50_54,pop_man_55_59:d.pop_man_55_59,pop_man_60_64:d.pop_man_60_64,pop_man_65_69:d.pop_man_65_69,pop_man_70_over:d.pop_man_70_over,pop_woman_0_9:d.pop_woman_0_9,pop_woman_10_14:d.pop_woman_10_14,pop_woman_15_19:d.pop_woman_15_19,pop_woman_20_24:d.pop_woman_20_24,pop_woman_25_29:d.pop_woman_25_29,pop_woman_30_34:d.pop_woman_30_34,pop_woman_35_39:d.pop_woman_35_39,pop_woman_40_44:d.pop_woman_40_44,pop_woman_45_49:d.pop_woman_45_49,pop_woman_50_54:d.pop_woman_50_54,pop_woman_55_59:d.pop_woman_55_59,pop_woman_60_64:d.pop_woman_60_64,pop_woman_65_69:d.pop_woman_65_69,pop_woman_70_over:d.pop_woman_70_over};		
+					popDataHash[d.code][d.date][d.time] = { pop_total: d.pop_total, pop_man_0_9: d.pop_man_0_9, pop_man_10_14: d.pop_man_10_14, pop_man_15_19: d.pop_man_15_19, pop_man_20_24: d.pop_man_20_24, pop_man_25_29: d.pop_man_25_29, pop_man_30_34: d.pop_man_30_34, pop_man_35_39: d.pop_man_35_39, pop_man_40_44: d.pop_man_40_44, pop_man_45_49: d.pop_man_45_49, pop_man_50_54: d.pop_man_50_54, pop_man_55_59: d.pop_man_55_59, pop_man_60_64: d.pop_man_60_64, pop_man_65_69: d.pop_man_65_69, pop_man_70_over: d.pop_man_70_over, pop_woman_0_9: d.pop_woman_0_9, pop_woman_10_14: d.pop_woman_10_14, pop_woman_15_19: d.pop_woman_15_19, pop_woman_20_24: d.pop_woman_20_24, pop_woman_25_29: d.pop_woman_25_29, pop_woman_30_34: d.pop_woman_30_34, pop_woman_35_39: d.pop_woman_35_39, pop_woman_40_44: d.pop_woman_40_44, pop_woman_45_49: d.pop_woman_45_49, pop_woman_50_54: d.pop_woman_50_54, pop_woman_55_59: d.pop_woman_55_59, pop_woman_60_64: d.pop_woman_60_64, pop_woman_65_69: d.pop_woman_65_69, pop_woman_70_over: d.pop_woman_70_over };
 				}
 
 				var foodData = await d3.json("./food_data.json");
@@ -92,6 +85,25 @@
 			}
 
 			return false;
+		}
+
+		function fetchData(code, date, time, age_lower, age_upper, gender) {
+			var sum = 0.0;
+			for (var age = age_lower; age < age_upper; age += 5) {
+				if (age >= 10 && age < 70) {
+					sum += parseFloat(popDataHash[code][date][time]["pop_" + gender + "_" + age + "_" + (age + 4)])
+				}
+				if (age < 10) {
+					sum += parseFloat(popDataHash[code][date][time]["pop_" + gender + "_0_9"]);
+					age = 5;
+				}
+				if (age >= 70) {
+					sum += parseFloat(popDataHash[code][date][time]["pop_" + gender + "_70_over"]);
+					break;
+				}
+			}
+			console.log(sum);
+			return sum;
 		}
 	</script>
 </body>
