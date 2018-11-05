@@ -17,15 +17,15 @@
 		var width = 960;
 		var height = 500;
 		var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
-		var color = d3.scaleLinear().domain([4000, 50000]).range([255, 0]);
+		var color = d3.scaleLinear().domain([4000, 30000]).range([255, 0]);
 
-		var cityNameHash = {}, popTotalHash = {}, foodDataHash = {}, switchCodeHash = {};
-		initData(cityNameHash, popTotalHash, foodDataHash, switchCodeHash).then((err) => {
+		var cityDataHash = {}, popTotalHash = {}, foodDataHash = {}, switchCodeHash = {};
+		initData(cityDataHash, popTotalHash, foodDataHash, switchCodeHash).then((err) => {
 			if (err) {
 				console.log(err);
 				return;
 			}
-			console.log(cityNameHash);
+			console.log(cityDataHash);
 			console.log(popTotalHash);
 			console.log(foodDataHash);
 			console.log(switchCodeHash);
@@ -41,7 +41,9 @@
 					if(Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]]))==NaN){
 						console.log(d.properties);
 					}
-					var a = "rgb(255," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]])) + "," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]])) + ")";
+					var a = "rgb(255," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]]
+						/cityDataHash[switchCodeHash[d.properties.code]].area)) + "," +
+						 Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]] / cityDataHash[switchCodeHash[d.properties.code]].area)) + ")";
 					if(a=="rgb(255,NaN,NaN)"){
 						console.log(d.properties);
 						console.log(switchCodeHash[d.properties.code]);
@@ -52,12 +54,18 @@
 			});
 		});
 
-		async function initData(cityNameHash, popTotalHash, foodDataHash, switchCodeHash) {
+		async function initData(cityDataHash, popTotalHash, foodDataHash, switchCodeHash) {
 			try {
+				cityAreaHash = {};
+				var areaData = await d3.tsv("./area.tsv");
+				for (d of areaData){
+					cityAreaHash[[d.CT_NM + d.H_DNG_NM]] = d.AREA;
+				}
 
 				var codeData = await d3.json("./code.json");
 				for (d of codeData) {
-					cityNameHash[d["H_DNG_CD"]] = d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"];
+					cityDataHash[d["H_DNG_CD"]] = {name:d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"],
+						area:cityAreaHash[d["CT_NM"] + d["H_DNG_NM"]]};
 					switchCodeHash[d["H_SDNG_CD"]] = d["H_DNG_CD"];
 				}
 
