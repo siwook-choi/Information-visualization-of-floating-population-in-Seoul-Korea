@@ -20,7 +20,7 @@
 		var color = d3.scaleLinear().domain([4000, 50000]).range([255, 0]);
 
 		var cityNameHash = {}, popTotalHash = {}, foodDataHash = {}, switchCodeHash = {};
-		init(cityNameHash, popTotalHash, foodDataHash, switchCodeHash).then((err) => {
+		initData(cityNameHash, popTotalHash, foodDataHash, switchCodeHash).then((err) => {
 			if (err) {
 				console.log(err);
 				return;
@@ -45,7 +45,7 @@
 			});
 		});
 
-		async function init(cityNameHash, popTotalHash, foodDataHash, switchCodeHash) {
+		async function initData(cityNameHash, popTotalHash, foodDataHash, switchCodeHash) {
 			try {
 				var codeData = await d3.json("./code.json");
 				for (d of codeData) {
