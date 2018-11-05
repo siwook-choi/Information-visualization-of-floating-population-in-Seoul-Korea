@@ -63,7 +63,8 @@
 
 				var popData = await d3.tsv("./pop_data.csv");
 				for (d of popData) {
-					popTotalHash[d.code] = d.pop_total;
+						popTotalHash[d.date][d.time][d.code]=d.pop_total;
+						popTotalHashman09[d.date][d.time][d.code] = {pop_man_0_9:d.pop_man_0_9};
 				}
 
 				var foodData = await d3.json("./food_data.json");
