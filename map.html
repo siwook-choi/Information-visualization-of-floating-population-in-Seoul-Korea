@@ -28,33 +28,65 @@
 				console.log(err);
 				return;
 			}
-			var slider_date = "20181024", slider_time = 12, slider_age_lower = 22, slider_age_upper = 30, select_box_gender = "woman";
-
 			var slider = document.getElementById('slider');
 
-
-			var max = 0.0, min = 999999.0;
-			console.log(cityList);
-			for (city of cityList) {
-				console.log(city);
-				var popDensity = fetchData(city, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
-					/ cityDataHash[city].area;
-				if (popDensity > max) {
-					max = popDensity;
-				}
-				if (popDensity < min) {
-					min = popDensity;
-				}
-			}
-			console.log(min);
-			console.log(max);
-			console.log(cityDataHash);
-			var color = d3.scaleLinear().domain([min, max]).range([255, 0]);
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width / 2, height / 2]).scale(70000);
 				var path = d3.geoPath().projection(projection);
-				
+				var slider_date = 20181024
+				var slider_time = 23
+				var slider_age_lower, slider_age_upper;
+				var select_box_gender = "man";
+
+				noUiSlider.create(slider, {
+					start: [20, 40],
+					connect: true,
+					step: 5,
+					range: {
+						'min': 0,
+						'max': 75
+					}
+				});
+				slider.noUiSlider.on('update', function (values, handle) {
+					slider_age_upper = parseInt(values[1]);
+					slider_age_lower = parseInt(values[0]);
+					var max = 0.0, min = 999999.0;
+					for (city of cityList) {
+						var popDensity = fetchData(city, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+							/ cityDataHash[city].area;
+						if (popDensity > max) {
+							max = popDensity;
+						}
+						if (popDensity < min) {
+							min = popDensity;
+						}
+					}
+
+					console.log("lower: " + slider_age_lower + " upper: " + slider_age_upper);
+					console.log("minimum: " + min + " maximum: " + max);
+					var color = d3.scaleLinear().domain([min, max]).range([255, 0]);
+					svg.selectAll("path").attr("fill", function (d) {
+						var pop = fetchData(switchCodeHash[d.properties.code], slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender);
+						return "rgb(255," +
+							Math.floor(color(pop)) +
+							"," + Math.floor(color(pop)) +
+							")";
+					});
+				});
+
+				var max = 0.0, min = 999999.0;
+				for (city of cityList) {
+					var popDensity = fetchData(city, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+						/ cityDataHash[city].area;
+					if (popDensity > max) {
+						max = popDensity;
+					}
+					if (popDensity < min) {
+						min = popDensity;
+					}
+				}
+				var color = d3.scaleLinear().domain([min, max]).range([255, 0]);
 
 				svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path).attr("fill", function (d) {
 					var pop = fetchData(switchCodeHash[d.properties.code], slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender);
@@ -106,9 +138,7 @@
 		}
 		function fetchData(code, date, time, age_lower, age_upper, gender) {
 			var sum = 0.0;
-			age_lower = age_lower - age_lower % 5;
-			age_upper = age_upper - age_upper % 5;
-			for (var age = age_lower; age < age_upper; age += 5) {
+			for (var age = age_lower; age <= age_upper; age += 5) {
 				if (age >= 10 && age < 70) {
 					sum += parseFloat(popDataHash[code][date][time]["pop_" + gender + "_" + age + "_" + (age + 4)])
 				}
