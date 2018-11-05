@@ -19,14 +19,13 @@
 		var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
 		var color = d3.scaleLinear().domain([4000, 30000]).range([255, 0]);
 
-		var cityDataHash = {}, popTotalHash = {}, foodDataHash = {}, switchCodeHash = {};
+		var cityDataHash = {}, popTotalHash = [], foodDataHash = {}, switchCodeHash = {};
 		initData(cityDataHash, popTotalHash, foodDataHash, switchCodeHash).then((err) => {
 			if (err) {
 				console.log(err);
 				return;
 			}
 			console.log(cityDataHash);
-			console.log(popTotalHash);
 			console.log(foodDataHash);
 			console.log(switchCodeHash);
 
@@ -38,12 +37,12 @@
 				var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width / 2, height / 2]).scale(70000);
 				var path = d3.geoPath().projection(projection);
 				svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path).attr("fill", function (d) {
-					if(Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]]))==NaN){
+					if(Math.floor(color(popTotalHash[20181024][23][switchCodeHash[d.properties.code]].pop_total))==NaN){
 						console.log(d.properties);
 					}
-					var a = "rgb(255," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]]
+					var a = "rgb(255," + Math.floor(color(popTotalHash[20181024][23][switchCodeHash[d.properties.code]].pop_total
 						/cityDataHash[switchCodeHash[d.properties.code]].area)) + "," +
-						 Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]] / cityDataHash[switchCodeHash[d.properties.code]].area)) + ")";
+						 Math.floor(color(popTotalHash[20181024][23][switchCodeHash[d.properties.code]].pop_total / cityDataHash[switchCodeHash[d.properties.code]].area)) + ")";
 					if(a=="rgb(255,NaN,NaN)"){
 						console.log(d.properties);
 						console.log(switchCodeHash[d.properties.code]);
