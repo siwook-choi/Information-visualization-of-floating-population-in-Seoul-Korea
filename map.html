@@ -12,6 +12,7 @@
 	<script src='./food_data.json' charsdet="utf-8"></script>
 	<script src="./lib/distribute/nouislider.min.js"></script>
     <link rel="stylesheet" href="./distribute/nouislider.min.css">
+
 </head>
 
 <body>
@@ -21,12 +22,13 @@
 		var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
 		var color = d3.scaleLinear().domain([4000, 30000]).range([255, 0]);
 
-		var cityDataHash = {}, popTotalHash = [], foodDataHash = {}, switchCodeHash = {};
-		initData(cityDataHash, popTotalHash, foodDataHash, switchCodeHash).then((err) => {
+		var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {};
+		initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash).then((err) => {
 			if (err) {
 				console.log(err);
 				return;
 			}
+			console.log(popDataHash);
 			console.log(cityDataHash);
 			console.log(foodDataHash);
 			console.log(switchCodeHash);
@@ -39,12 +41,12 @@
 				var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width / 2, height / 2]).scale(70000);
 				var path = d3.geoPath().projection(projection);
 				svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path).attr("fill", function (d) {
-					if(Math.floor(color(popTotalHash[20181024][23][switchCodeHash[d.properties.code]].pop_total))==NaN){
+					if(Math.floor(color(popDataHash[20181024][23][switchCodeHash[d.properties.code]].pop_total))==NaN){
 						console.log(d.properties);
 					}
-					var a = "rgb(255," + Math.floor(color(popTotalHash[20181024][23][switchCodeHash[d.properties.code]].pop_total
+					var a = "rgb(255," + Math.floor(color(popDataHash[20181024][23][switchCodeHash[d.properties.code]].pop_total
 						/cityDataHash[switchCodeHash[d.properties.code]].area)) + "," +
-						 Math.floor(color(popTotalHash[20181024][23][switchCodeHash[d.properties.code]].pop_total / cityDataHash[switchCodeHash[d.properties.code]].area)) + ")";
+						 Math.floor(color(popDataHash[20181024][23][switchCodeHash[d.properties.code]].pop_total / cityDataHash[switchCodeHash[d.properties.code]].area)) + ")";
 					if(a=="rgb(255,NaN,NaN)"){
 						console.log(d.properties);
 						console.log(switchCodeHash[d.properties.code]);
@@ -55,7 +57,7 @@
 			});
 		});
 
-		async function initData(cityDataHash, popTotalHash, foodDataHash, switchCodeHash) {
+		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash) {
 			try {
 				cityAreaHash = {};
 				var areaData = await d3.tsv("./area.tsv");
@@ -72,7 +74,13 @@
 
 				var popData = await d3.tsv("./pop_data.csv");
 				for (d of popData) {
-					popTotalHash[d.date] = {pop_total:d.pop_total,pop_man_0_9:d.pop_man_0_9,pop_man_10_14:d.pop_man_10_14,pop_man_15_19:d.pop_man_15_19,pop_man_20_24:d.pop_man_20_24,pop_man_25_29:d.pop_man_25_29,pop_man_30_34:d.pop_man_30_34,pop_man_35_39:d.pop_man_35_39,pop_man_40_44:d.pop_man_40_44,pop_man_45_49:d.pop_man_45_49,pop_man_50_54:d.pop_man_50_54,pop_man_55_59:d.pop_man_55_59,pop_man_60_64:d.pop_man_60_64,pop_man_65_69:d.pop_man_65_69,pop_man_70_over:d.pop_man_70_over,pop_woman_0_9:d.pop_woman_0_9,pop_woman_10_14:d.pop_woman_10_14,pop_woman_15_19:d.pop_woman_15_19,pop_woman_20_24:d.pop_woman_20_24,pop_woman_25_29:d.pop_woman_25_29,pop_woman_30_34:d.pop_woman_30_34,pop_woman_35_39:d.pop_woman_35_39,pop_woman_40_44:d.pop_woman_40_44,pop_woman_45_49:d.pop_woman_45_49,pop_woman_50_54:d.pop_woman_50_54,pop_woman_55_59:d.pop_woman_55_59,pop_woman_60_64:d.pop_woman_60_64,pop_woman_65_69:d.pop_woman_65_69,pop_woman_70_over:d.pop_woman_70_over};		
+					if(popDataHash[d.code] == undefined){
+						popDataHash[d.code] = {};
+					}
+					if(popDataHash[d.code][d.date] == undefined){
+						popDataHash[d.code][d.date] = {};
+					}
+					popDataHash[d.code][d.date][d.time] = {pop_total:d.pop_total,pop_man_0_9:d.pop_man_0_9,pop_man_10_14:d.pop_man_10_14,pop_man_15_19:d.pop_man_15_19,pop_man_20_24:d.pop_man_20_24,pop_man_25_29:d.pop_man_25_29,pop_man_30_34:d.pop_man_30_34,pop_man_35_39:d.pop_man_35_39,pop_man_40_44:d.pop_man_40_44,pop_man_45_49:d.pop_man_45_49,pop_man_50_54:d.pop_man_50_54,pop_man_55_59:d.pop_man_55_59,pop_man_60_64:d.pop_man_60_64,pop_man_65_69:d.pop_man_65_69,pop_man_70_over:d.pop_man_70_over,pop_woman_0_9:d.pop_woman_0_9,pop_woman_10_14:d.pop_woman_10_14,pop_woman_15_19:d.pop_woman_15_19,pop_woman_20_24:d.pop_woman_20_24,pop_woman_25_29:d.pop_woman_25_29,pop_woman_30_34:d.pop_woman_30_34,pop_woman_35_39:d.pop_woman_35_39,pop_woman_40_44:d.pop_woman_40_44,pop_woman_45_49:d.pop_woman_45_49,pop_woman_50_54:d.pop_woman_50_54,pop_woman_55_59:d.pop_woman_55_59,pop_woman_60_64:d.pop_woman_60_64,pop_woman_65_69:d.pop_woman_65_69,pop_woman_70_over:d.pop_woman_70_over};		
 				}
 
 				var foodData = await d3.json("./food_data.json");
