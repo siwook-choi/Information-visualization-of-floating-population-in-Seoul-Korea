@@ -38,19 +38,27 @@
 				var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width / 2, height / 2]).scale(70000);
 				var path = d3.geoPath().projection(projection);
 				svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path).attr("fill", function (d) {
-					return "rgb(255," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]])) + "," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]])) + ")";
-				}
-				).attr("stroke", "#333333").attr("stroke-width", 0.5);
+					if(Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]]))==NaN){
+						console.log(d.properties);
+					}
+					var a = "rgb(255," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]])) + "," + Math.floor(color(popTotalHash[switchCodeHash[d.properties.code]])) + ")";
+					if(a=="rgb(255,NaN,NaN)"){
+						console.log(d.properties);
+						console.log(switchCodeHash[d.properties.code]);
+					}
+					return a;
+				}).attr("stroke", "#333333").attr("stroke-width", 0.5);
 
 			});
 		});
 
 		async function initData(cityNameHash, popTotalHash, foodDataHash, switchCodeHash) {
 			try {
+
 				var codeData = await d3.json("./code.json");
 				for (d of codeData) {
 					cityNameHash[d["H_DNG_CD"]] = d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"];
-					switchCodeHash[d["H_DNG_CD"]] = d["H_SDNG_CD"];
+					switchCodeHash[d["H_SDNG_CD"]] = d["H_DNG_CD"];
 				}
 
 				var popData = await d3.tsv("./pop_data.csv");
