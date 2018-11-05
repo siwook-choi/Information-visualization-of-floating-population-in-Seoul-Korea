@@ -13,6 +13,22 @@
 	<script src="./lib/distribute/nouislider.min.js"></script>
 	<link rel="stylesheet" href="./distribute/nouislider.min.css">
 
+	<style>
+		div.tooltip {	
+			  position: absolute;			
+			  text-align: center;			
+			  width: 165px;					
+			  height: 50px;					
+			  padding: 2px;				
+			  font: 12px sans-serif;		
+			  background: lightsteelblue;	
+			  border: 0px;		
+			  border-radius: 8px;			
+			  pointer-events: none;			
+		  }
+		  
+		  </style>
+
 </head>
 
 <body>
@@ -20,10 +36,12 @@
 		var width = 960;
 		var height = 500;
 		var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
-		var color = d3.scaleLinear().domain([4000, 30000]).range([255, 0]);
+		var div = d3.select("body").append("div")
+        	.attr("class", "tooltip")
+        	.style("opacity", 0);
 
-		var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {};
-		initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash).then((err) => {
+		var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
+		initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList).then((err) => {
 			if (err) {
 				console.log(err);
 				return;
@@ -32,36 +50,74 @@
 			var slider_date = "20181024", slider_time = 12, slider_age_lower = 20, slider_age_upper = 30, select_box_gender = "man";
 			//these should be given by input
 
+			var max = 0.0, min = 999999.0;
+			console.log(cityList);
+
+			for (city of cityList) {
+				console.log(city);
+				var popDensity = fetchData(city, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+					/ cityDataHash[city].area;
+				if (popDensity > max) {
+					max = popDensity;
+				}
+				if (popDensity < min) {
+					min = popDensity;
+				}
+			}
+			console.log(min);
+			console.log(max);
+
+			console.log(cityDataHash);
+
+			var color = d3.scaleLinear().domain([min, max]).range([255, 0]);
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width / 2, height / 2]).scale(70000);
 				var path = d3.geoPath().projection(projection);
 				svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path).attr("fill", function (d) {
-					var pop = fetchData(switchCodeHash[d.properties.code], slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender);
+					var popDensity = fetchData(switchCodeHash[d.properties.code], slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+						/ cityDataHash[switchCodeHash[d.properties.code]].area;
 					return "rgb(255," +
-						Math.floor(color(pop)) +
-						"," + Math.floor(color(pop)) +
+						Math.floor(color(popDensity)) +
+						"," + Math.floor(color(popDensity)) +
 						")";
-				}).attr("stroke", "#333333").attr("stroke-width", 0.5);
+				}).attr("stroke", "#333333").attr("stroke-width", 0.5)
+					.on("mouseover", function (d) {
+						var cityCode = switchCodeHash[d.properties.code];
+						div.transition()
+							.duration(200)
+							.style("opacity", .9);
+						div.html(cityDataHash[cityCode].name + "<br> 人口密度(人/km^2): <br>" 
+							+ (fetchData(cityCode, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+							/ cityDataHash[cityCode].area).toFixed(2))
+							.style("left", (d3.event.pageX) + "px")
+							.style("top", (d3.event.pageY - 28) + "px");
+					})
+					.on("mouseout", function (d) {
+						div.transition()
+							.duration(500)
+							.style("opacity", 0);
+					});
 
 			});
 		});
 
-		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash) {
+		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
 			try {
 				cityAreaHash = {};
 				var areaData = await d3.tsv("./area.tsv");
 				for (d of areaData) {
-					cityAreaHash[[d.CT_NM + d.H_DNG_NM]] = d.AREA;
+					cityAreaHash[[d.CT_NM + " " + d.H_DNG_NM]] = d.AREA;
 				}
 
 				var codeData = await d3.json("./code.json");
 				for (d of codeData) {
 					cityDataHash[d["H_DNG_CD"]] = {
-						name: d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"],
-						area: cityAreaHash[d["CT_NM"] + d["H_DNG_NM"]]
+						name: d["DO_NM"] + " " + d["CT_NM"] + " " + d["H_DNG_NM"],
+						area: cityAreaHash[d["CT_NM"] + " " + d["H_DNG_NM"]]
 					};
+					cityList.push(d["H_DNG_CD"]);
 					switchCodeHash[d["H_SDNG_CD"]] = d["H_DNG_CD"];
 				}
 
@@ -102,7 +158,6 @@
 					break;
 				}
 			}
-			console.log(sum);
 			return sum;
 		}
 	</script>
