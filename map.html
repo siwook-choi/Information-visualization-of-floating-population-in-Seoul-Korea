@@ -10,6 +10,8 @@
 	<script src="./lib/topojson.js" charsdet="utf-8"></script>
 	<script src='./code.json' charsdet="utf-8"></script>
 	<script src='./food_data.json' charsdet="utf-8"></script>
+	<script src="./lib/distribute/nouislider.min.js"></script>
+    <link rel="stylesheet" href="./distribute/nouislider.min.css">
 </head>
 
 <body>
@@ -70,7 +72,7 @@
 
 				var popData = await d3.tsv("./pop_data.csv");
 				for (d of popData) {
-						popTotalHash[d.date][d.time][d.code] = {pop_total:d.pop_total,pop_man_0_9:d.pop_man_0_9,pop_man_10_14:d.pop_man_10_14,pop_man_15_19:d.pop_man_15_19,pop_man_20_24:d.pop_man_20_24,pop_man_25_29:d.pop_man_25_29,pop_man_30_34:d.pop_man_30_34,pop_man_35_39:d.pop_man_35_39,pop_man_40_44:d.pop_man_40_44,pop_man_45_49:d.pop_man_45_49,pop_man_50_54:d.pop_man_50_54,pop_man_55_59:d.pop_man_55_59,pop_man_60_64:d.pop_man_60_64,pop_man_65_69:d.pop_man_65_69,pop_man_70_over:d.pop_man_70_over,pop_woman_0_9:d.pop_woman_0_9,pop_woman_10_14:d.pop_woman_10_14,pop_woman_15_19:d.pop_woman_15_19,pop_woman_20_24:d.pop_woman_20_24,pop_woman_25_29:d.pop_woman_25_29,pop_woman_30_34:d.pop_woman_30_34,pop_woman_35_39:d.pop_woman_35_39,pop_woman_40_44:d.pop_woman_40_44,pop_woman_45_49:d.pop_woman_45_49,pop_woman_50_54:d.pop_woman_50_54,pop_woman_55_59:d.pop_woman_55_59,pop_woman_60_64:d.pop_woman_60_64,pop_woman_65_69:d.pop_woman_65_69,pop_woman_70_over:d.pop_woman_70_over};		
+					popTotalHash[d.date] = {pop_total:d.pop_total,pop_man_0_9:d.pop_man_0_9,pop_man_10_14:d.pop_man_10_14,pop_man_15_19:d.pop_man_15_19,pop_man_20_24:d.pop_man_20_24,pop_man_25_29:d.pop_man_25_29,pop_man_30_34:d.pop_man_30_34,pop_man_35_39:d.pop_man_35_39,pop_man_40_44:d.pop_man_40_44,pop_man_45_49:d.pop_man_45_49,pop_man_50_54:d.pop_man_50_54,pop_man_55_59:d.pop_man_55_59,pop_man_60_64:d.pop_man_60_64,pop_man_65_69:d.pop_man_65_69,pop_man_70_over:d.pop_man_70_over,pop_woman_0_9:d.pop_woman_0_9,pop_woman_10_14:d.pop_woman_10_14,pop_woman_15_19:d.pop_woman_15_19,pop_woman_20_24:d.pop_woman_20_24,pop_woman_25_29:d.pop_woman_25_29,pop_woman_30_34:d.pop_woman_30_34,pop_woman_35_39:d.pop_woman_35_39,pop_woman_40_44:d.pop_woman_40_44,pop_woman_45_49:d.pop_woman_45_49,pop_woman_50_54:d.pop_woman_50_54,pop_woman_55_59:d.pop_woman_55_59,pop_woman_60_64:d.pop_woman_60_64,pop_woman_65_69:d.pop_woman_65_69,pop_woman_70_over:d.pop_woman_70_over};		
 				}
 
 				var foodData = await d3.json("./food_data.json");
