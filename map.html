@@ -51,8 +51,8 @@
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([126.9895, 37.5551]).translate([width / 2, height / 2]).scale(70000);
 				var path = d3.geoPath().projection(projection);
-				var slider_date = 20181024
-				var slider_time = 23
+				var slider_date = 20181020;
+				var slider_time = 14;
 				var slider_age_lower, slider_age_upper;
 				var select_box_gender = "man";
 
@@ -80,12 +80,12 @@
 							min = popDensity;
 						}
 					}
-
-					console.log("lower: " + slider_age_lower + " upper: " + slider_age_upper);
-					console.log("minimum: " + min + " maximum: " + max);
 					var color = d3.scaleLinear().domain([min, max]).range([255, 0]);
+
 					svg.selectAll("path").attr("fill", function (d) {
-						var pop = fetchData(switchCodeHash[d.properties.code], slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender);
+						var code = switchCodeHash[d.properties.code];
+						var pop = fetchData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+							/ cityDataHash[code].area;
 						return "rgb(255," +
 							Math.floor(color(pop)) +
 							"," + Math.floor(color(pop)) +
@@ -109,7 +109,9 @@
 				svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path)
 					.attr("stroke", "#333333").attr("stroke-width", 0.5)
 					.attr("fill", function (d) {
-						var pop = fetchData(switchCodeHash[d.properties.code], slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender);
+						var code = switchCodeHash[d.properties.code];
+						var pop = fetchData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+							/ cityDataHash[code].area;
 						return "rgb(255," +
 							Math.floor(color(pop)) +
 							"," + Math.floor(color(pop)) +
@@ -175,16 +177,24 @@
 		function fetchData(code, date, time, age_lower, age_upper, gender) {
 			var sum = 0.0;
 			for (var age = age_lower; age < age_upper; age += 5) {
+				var currentHash = popDataHash[code][date][time];
+				var ageString;
 				if (age >= 10 && age < 70) {
-					sum += parseFloat(popDataHash[code][date][time]["pop_" + gender + "_" + age + "_" + (age + 4)])
+					ageString = "_" + age + "_" + (age + 4);
 				}
 				if (age < 10) {
-					sum += parseFloat(popDataHash[code][date][time]["pop_" + gender + "_0_9"]);
+					ageString = "_0_9";
 					age = 5;
 				}
 				if (age >= 70) {
-					sum += parseFloat(popDataHash[code][date][time]["pop_" + gender + "_70_over"]);
-					break;
+					ageString = "_70_over";
+				}
+				if(gender == "total"){
+					sum += parseFloat(currentHash["pop_" + "man" + ageString]);
+					sum += parseFloat(currentHash["pop_" + "woman" + ageString]);
+				}
+				else{
+					sum += parseFloat(currentHash[("pop_" + gender + ageString)]);
 				}
 			}
 			return sum;
