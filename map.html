@@ -34,6 +34,17 @@
 </head>
 
 <body>
+		<div class="wrapper">
+			<div id='div1'></div>
+			<p id="slider2_value"></p>
+			<p id="slider2"></p>
+			<div id='div2'>
+				<p id="slider1_value"></p>
+				<p id="slider1"></p>
+			</div>
+			<div id='div3'></div>
+			<div id='div4'></div>
+		</div>
 	<script type="text/javascript">
 		const MIN_CITY_AREA = 1.0;
 		var width = 600;
@@ -89,6 +100,29 @@
 
 					refreshSvg1();
 				});
+				noUiSlider.create(slider2, {
+					start: [12],
+					connect: [true,false],
+					step: 1,
+					margin: 5,
+					range: {
+						'min': 0,
+						'max': 23
+					}
+				});
+				slider.noUiSlider.on('update', function (values, handle) {
+					slider_age_lower = parseInt(values[0]);
+					slider_age_upper = parseInt(values[1]);
+					if (slider_age_lower == 5) {
+						slider_age_lower = 0;
+					}
+					document.getElementById('slider1_value').innerHTML =
+						"age: " + slider_age_lower + " ~ " + (slider_age_upper - 1);
+                    document.getElementById('slider2_value').innerHTML =
+						"time: " + slider_time;
+					refreshSvg1();
+				});
+
 
 				initSvg1();
 				initSvg2();
@@ -186,20 +220,6 @@
 						});
 				}
 
-				function refreshSvg2() {
-					var color = getScaleLinearSvg2();
-					food/=getArea(code);
-					svg2.selectAll("path").attr("fill", function (d) {
-						var code = switchCodeHash[d.properties.code];
-						var food = foodDataHash[code]["menu_" + select_box_food];
-					
-						return "rgb(255," +
-							Math.floor(color(food)) +
-							"," + Math.floor(color(food)) +
-							")";
-					});
-				}
-
 				function getScaleLinearSvg2() {
 					var max = 0.0, min = 999999.0;
 					for (code of cityList) {
@@ -225,6 +245,9 @@
 				}
 			});
 		});
+
+
+
 
 		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
 			try {
