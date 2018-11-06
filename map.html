@@ -34,15 +34,6 @@
 </head>
 
 <body>
-<<<<<<< HEAD
-	<div class="wrapper">
-		<div id='div1'></div>
-		<p id="slider2_value"></p>
-		<p id="slider2"></p>
-		<div id='div2'>
-			<p id="slider1_value"></p>
-			<p id="slider1"></p>
-=======
 		<div class="wrapper">
 			<div id='div1'></div>
 			<div id='div2'>
@@ -53,7 +44,6 @@
 			</div>
 			<div id='div3'></div>
 			<div id='div4'></div>
->>>>>>> f02ede819e9a06618de7c2c4acd5a703e21d307b
 		</div>
 		<div id='div3'></div>
 		<div id='div4'></div>
@@ -67,7 +57,7 @@
 		var div1 = d3.select("#div1").append("div")
 			.attr("class", "tooltip")
 			.style("opacity", 0);
-		var div2 = d3.select("#div2").append("div")
+		var div2 = d3.select("#div3").append("div")
 			.attr("class", "tooltip")
 			.style("opacity", 0);
 		var color = d3.scaleLinear().domain([4000, 30000]).range([255, 0]);
@@ -104,11 +94,7 @@
 
 				noUiSlider.create(sliderTime, {
 					start: [12],
-<<<<<<< HEAD
-					connect: [true, false],
-=======
 					connect: false,
->>>>>>> f02ede819e9a06618de7c2c4acd5a703e21d307b
 					step: 1,
 					range: {
 						'min': 0,
@@ -126,9 +112,6 @@
 
 					document.getElementById('sliderAge_value').innerHTML =
 						"age: " + slider_age_lower + " ~ " + (slider_age_upper - 1);
-<<<<<<< HEAD
-					document.getElementById('slider2_value').innerHTML =
-=======
 
 					refreshSvg1();
 				});
@@ -136,7 +119,6 @@
 				sliderTime.noUiSlider.on('update', function (values, handle) {
 					slider_time = parseInt(values[0]);
                     document.getElementById('sliderTime_value').innerHTML =
->>>>>>> f02ede819e9a06618de7c2c4acd5a703e21d307b
 						"time: " + slider_time;
 					refreshSvg1();
 				});
