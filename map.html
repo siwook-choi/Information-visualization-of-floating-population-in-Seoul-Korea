@@ -34,7 +34,6 @@
 </head>
 
 <body>
-	<p id="slider" style="position:relative;left:700px;top:300px;"></p>
 	<script type="text/javascript">
 		const MIN_CITY_AREA = 1.0;
 		var width = 600;
@@ -78,7 +77,6 @@
 					}
 				});
 
-
 				slider.noUiSlider.on('update', function (values, handle) {
 					slider_age_lower = parseInt(values[0]);
 					slider_age_upper = parseInt(values[1]);
@@ -91,7 +89,6 @@
 
 					refreshSvg1();
 				});
-
 
 				initSvg1();
 				initSvg2();
