@@ -196,6 +196,20 @@
 						});
 				}
 
+				function refreshSvg2() {
+					var color = getScaleLinearSvg2();
+					food/=getArea(code);
+					svg2.selectAll("path").attr("fill", function (d) {
+						var code = switchCodeHash[d.properties.code];
+						var food = foodDataHash[code]["menu_" + select_box_food];
+					
+						return "rgb(255," +
+							Math.floor(color(food)) +
+							"," + Math.floor(color(food)) +
+							")";
+					});
+				}
+
 				function getScaleLinearSvg2() {
 					var max = 0.0, min = 999999.0;
 					for (code of cityList) {
@@ -221,9 +235,6 @@
 				}
 			});
 		});
-
-
-
 
 		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
 			try {
