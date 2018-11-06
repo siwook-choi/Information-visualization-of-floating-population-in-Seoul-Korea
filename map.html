@@ -126,9 +126,15 @@
 				});
 
 				sliderTime.noUiSlider.on('update', function (value, handle) {
-					slider_time = parseInt(value);
+					var time = parseInt(value);
 					document.getElementById('sliderTime_value').innerHTML =
-						"time: " + slider_time + "時";
+						"time: " + time + "時";
+					if(time < 10){
+						slider_time = "0" + time;
+					}
+					else{
+						slider_time = "" + time;
+					}
 					refreshSvg1();
 				});
 
