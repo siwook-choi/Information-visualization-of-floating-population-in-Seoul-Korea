@@ -52,7 +52,22 @@
 			</p>
 		</div>
 		<div id='div3'></div>
-		<div id='div4'></div>
+		<div id='div4'>
+			<p class="restaurant-select" style="width:200px;">
+				<select id="selectRestaurantType">
+					<option value="1" selected="selected">韓国料理</option>
+					<option value="2">洋食</option>
+					<option value="3">アジア料理</option>
+					<option value="4">和食</option>
+					<option value="5">中国料理</option>
+					<option value="6">屋台料理</option>
+					<option value="7">カフェ</option>
+					<option value="8">バイキング</option>
+					<option value="9">etc</option>
+
+				</select>
+			</p>
+		</div>
 	</div>
 
 	<script type="text/javascript">
@@ -77,6 +92,7 @@
 			var sliderTime = document.getElementById('sliderTime');
 			var sliderAge = document.getElementById('sliderAge');
 			var selectGender = document.getElementById('selectGender');
+			var selectRestaurantType = document.getElementById('selectRestaurantType');
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
@@ -164,6 +180,12 @@
 					}
 					console.log(select_box_gender);
 					refreshSvg1();
+				};
+				selectRestaurantType.onchange = () => {
+					var restaurant = parseInt(selectRestaurantType.value);
+					select_box_food = restaurant;
+					console.log(select_box_food);
+					refreshSvg2();
 				};
 
 
