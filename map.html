@@ -280,7 +280,7 @@
 
 				function refreshSvg2() {
 					var color = getScaleLinearSvg2();
-					svg1.selectAll("path").attr("fill", function (d) {
+					svg2.selectAll("path").attr("fill", function (d) {
 						var code = switchCodeHash[d.properties.code];
 						var food = foodDataHash[code]["menu_" + select_box_food];
 						food /= getArea(code);
