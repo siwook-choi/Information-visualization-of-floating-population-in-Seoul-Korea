@@ -277,6 +277,20 @@
 								.style("opacity", 0);
 						});
 				}
+
+				function refreshSvg2() {
+					var color = getScaleLinearSvg2();
+					svg1.selectAll("path").attr("fill", function (d) {
+						var code = switchCodeHash[d.properties.code];
+						var food = foodDataHash[code]["menu_" + select_box_food];
+						food /= getArea(code);
+						return "rgb(255," +
+							Math.floor(color(food)) +
+							"," + Math.floor(color(food)) +
+							")";
+					});
+				}
+
 				function getScaleLinearSvg2() {
 					var max = 0.0, min = 999999.0;
 					for (code of cityList) {
