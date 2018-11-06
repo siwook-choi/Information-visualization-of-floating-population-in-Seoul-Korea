@@ -45,9 +45,9 @@
 			<p id="sliderAge"></p>
 			<p class="gender-select" style="width:200px;">
 				<select id="selectGender">
-				  <option value="1" selected="selected">Total</option>
-				  <option value="2">Men</option>
-				  <option value="3">Women</option>
+					<option value="1" selected="selected">Total</option>
+					<option value="2">Men</option>
+					<option value="3">Women</option>
 				</select>
 			</p>
 		</div>
@@ -136,10 +136,10 @@
 					var time = parseInt(value);
 					document.getElementById('sliderTime_value').innerHTML =
 						"time: " + time + "時";
-					if(time < 10){
+					if (time < 10) {
 						slider_time = "0" + time;
 					}
-					else{
+					else {
 						slider_time = "" + time;
 					}
 					refreshSvg1();
@@ -155,12 +155,12 @@
 						"age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
 					refreshSvg1();
 				});
-				selectGender.onchange = ()=>{
+				selectGender.onchange = () => {
 					var gender = parseInt(selectGender.value);
-					switch(gender){
-						case 1:select_box_gender="total";break;
-						case 2:select_box_gender="man";break;
-						case 3:select_box_gender="woman";break;
+					switch (gender) {
+						case 1: select_box_gender = "total"; break;
+						case 2: select_box_gender = "man"; break;
+						case 3: select_box_gender = "woman"; break;
 					}
 					console.log(select_box_gender);
 					refreshSvg1();
