@@ -37,6 +37,8 @@
 	<div class="wrapper">
 		<div id='div1'></div>
 		<div id='div2'>
+			<p id="sliderDate_value"></p>
+			<p id="sliderDate"></p>
 			<p id="sliderTime_value"></p>
 			<p id="sliderTime"></p>
 			<p id="sliderAge_value"></p>
@@ -64,8 +66,10 @@
 				console.log(err);
 				return;
 			}
-			var sliderAge = document.getElementById('sliderAge');
+			var sliderDate = document.getElementById('sliderDate');
 			var sliderTime = document.getElementById('sliderTime');
+			var sliderAge = document.getElementById('sliderAge');
+
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
@@ -75,6 +79,26 @@
 				var slider_age_lower, slider_age_upper;
 				var select_box_gender = "man";
 				var select_box_food = 4;
+				noUiSlider.create(sliderDate, {
+					start: 12,
+					connect: false,
+					step: 1,
+					range: {
+						'min': 1,
+						'max': 24
+					}
+				});
+
+				noUiSlider.create(sliderTime, {
+					start: 12,
+					connect: false,
+					step: 1,
+					range: {
+						'min': 0,
+						'max': 23
+					}
+				});
+
 				noUiSlider.create(sliderAge, {
 					start: [20, 40],
 					connect: true,
@@ -85,15 +109,29 @@
 						'max': 75
 					}
 				});
-				noUiSlider.create(sliderTime, {
-					start: 12,
-					connect: false,
-					step: 1,
-					range: {
-						'min': 0,
-						'max': 23
+
+				sliderDate.noUiSlider.on('update', function (value, handle) {
+					var date = parseInt(value);
+
+					document.getElementById('sliderDate_value').innerHTML =
+						"date: 2018年10月" + date + "日";
+					if (date < 10) {
+						slider_date = "2018100" + date;
 					}
+					else {
+						slider_date = "201810" + date;
+					}
+
+					refreshSvg1();
 				});
+
+				sliderTime.noUiSlider.on('update', function (value, handle) {
+					slider_time = parseInt(value);
+					document.getElementById('sliderTime_value').innerHTML =
+						"time: " + slider_time + "時";
+					refreshSvg1();
+				});
+
 				sliderAge.noUiSlider.on('update', function (values, handle) {
 					slider_age_lower = parseInt(values[0]);
 					slider_age_upper = parseInt(values[1]);
@@ -104,13 +142,8 @@
 						"age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
 					refreshSvg1();
 				});
-				
-				sliderTime.noUiSlider.on('update', function(value, handle){
-					slider_time = parseInt(value);
-					document.getElementById('sliderTime_value').innerHTML =
-						"time: " + slider_time + "時";
-					refreshSvg1();
-				});
+
+
 
 				initSvg1();
 				initSvg2();
@@ -172,7 +205,6 @@
 				}
 				function initSvg2() {
 					var color = getScaleLinearSvg2();
-					console.log(color);
 					svg2.selectAll("path").data(seoul.features).enter().append("path").attr("d", path)
 						.attr("stroke", "#333333").attr("stroke-width", 0.5)
 						.attr("fill", function (d) {
@@ -191,7 +223,7 @@
 								.duration(100)
 								.style("opacity", .9);
 							div2.html(cityDataHash[code].name + "<br>飲食店の密度(店/km^2): "
-								+ (food/getArea(code)).toFixed(2))
+								+ (food / getArea(code)).toFixed(2))
 								.style("left", (d3.event.pageX) + "px")
 								.style("top", (d3.event.pageY - 28) + "px");
 						})
@@ -215,13 +247,13 @@
 					}
 					return d3.scaleLinear().domain([min, max]).range([255, 0]);
 				}
-				function getArea(code){
+				function getArea(code) {
 					if (cityDataHash[code].area < MIN_CITY_AREA) {
-							return MIN_CITY_AREA;
-						}
-						else {
-							return cityDataHash[code].area;
-						}
+						return MIN_CITY_AREA;
+					}
+					else {
+						return cityDataHash[code].area;
+					}
 				}
 			});
 		});
