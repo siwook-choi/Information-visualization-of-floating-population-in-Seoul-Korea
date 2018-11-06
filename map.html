@@ -27,7 +27,7 @@
 		  }
 		  .wrapper{
 			  display: grid;
-			  grid-template-columns: 500px 200px;
+			  grid-template-columns: 500px 300px;
 			  grid-template-rows: 400px 400px;
 		  }
 	</style>
@@ -45,7 +45,7 @@
 	</div>
 
 	<script type="text/javascript">
-		const MIN_CITY_AREA = 0.5;
+		const MIN_CITY_AREA = 0.8;
 		var width = 600;
 		var height = 400;
 		var svg1 = d3.select("#div1").append("svg").attr("width", width).attr("height", height);
@@ -68,11 +68,11 @@
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
 				var path = d3.geoPath().projection(projection);
-				var slider_date = 20181020;
-				var slider_time = 14;
+				var slider_date = 20181023;
+				var slider_time = 16;
 				var slider_age_lower, slider_age_upper;
-				var select_box_gender = "man";
-				var select_box_food = 4;
+				var select_box_gender = "woman";
+				var select_box_food = 7;
 
 				noUiSlider.create(slider, {
 					start: [20, 40],
