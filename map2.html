@@ -27,16 +27,24 @@
 		  }
 		  .wrapper{
 			  display: grid;
-			  grid-template-columns: 500px 300px;
+			  grid-template-columns: 500px 200px;
 			  grid-template-rows: 400px 400px;
 		  }
-	</style>
+    </style>
 </head>
 
 <body>
-	<p id="slider" style="position:relative;left:700px;top:300px;"></p>
+    <div class="wrapper">
+		<div id='div1'></div>
+		<div id='div2'>
+			<p id="slider1_value"></p>
+			<p id="slider1"></p>
+		</div>
+		<div id='div3'></div>
+		<div id='div4'></div>
+	</div>
+
 	<script type="text/javascript">
-		const MIN_CITY_AREA = 1.0;
 		var width = 600;
 		var height = 400;
 		var svg1 = d3.select("#div1").append("svg").attr("width", width).attr("height", height);
@@ -47,7 +55,6 @@
 		var div2 = d3.select("#div2").append("div")
 			.attr("class", "tooltip")
 			.style("opacity", 0);
-		var color = d3.scaleLinear().domain([4000, 30000]).range([255, 0]);
 		var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
 		initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList).then((err) => {
 			if (err) {
@@ -55,21 +62,18 @@
 				return;
 			}
 			var slider = document.getElementById('slider1');
-
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
 				var path = d3.geoPath().projection(projection);
-				var slider_date = 20181023;
-				var slider_time = 16;
+				var slider_date = 20181020;
+				var slider_time = 14;
 				var slider_age_lower, slider_age_upper;
-				var select_box_gender = "woman";
-				var select_box_food = 7;
-
+				var select_box_gender = "man";
+				var select_box_food = 4;
 				noUiSlider.create(slider, {
 					start: [20, 40],
 					connect: true,
-					tooltips: true,
 					step: 5,
 					margin: 5,
 					range: {
@@ -77,25 +81,18 @@
 						'max': 75
 					}
 				});
-
-
 				slider.noUiSlider.on('update', function (values, handle) {
 					slider_age_lower = parseInt(values[0]);
 					slider_age_upper = parseInt(values[1]);
 					if (slider_age_lower == 5) {
 						slider_age_lower = 0;
 					}
-
 					document.getElementById('slider1_value').innerHTML =
 						"age: " + slider_age_lower + " ~ " + (slider_age_upper - 1);
-
 					refreshSvg1();
 				});
-
-
 				initSvg1();
 				initSvg2();
-
 				function initSvg1() {
 					var color = getScaleLinearSvg1();
 					svg1.selectAll("path").data(seoul.features).enter().append("path").attr("d", path)
@@ -126,10 +123,8 @@
 								.style("opacity", 0);
 						});
 				}
-
 				function refreshSvg1() {
 					var color = getScaleLinearSvg1();
-
 					svg1.selectAll("path").attr("fill", function (d) {
 						var code = switchCodeHash[d.properties.code];
 						var pop = fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
@@ -140,12 +135,11 @@
 							")";
 					});
 				}
-
-				function getScaleLinearSvg1() {
+				function getScaleLinearSvg1(){
 					var max = 0.0, min = 999999.0;
-					for (code of cityList) {
-						var popDensity = fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
-							/ cityDataHash[code].area;
+					for (city of cityList) {
+						var popDensity = fetchPopData(city, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+							/ cityDataHash[city].area;
 						if (popDensity > max) {
 							max = popDensity;
 						}
@@ -155,7 +149,6 @@
 					}
 					return d3.scaleLinear().domain([min, max]).range([255, 0]);
 				}
-
 				function initSvg2() {
 					var color = getScaleLinearSvg2();
 					console.log(color);
@@ -163,8 +156,8 @@
 						.attr("stroke", "#333333").attr("stroke-width", 0.5)
 						.attr("fill", function (d) {
 							var code = switchCodeHash[d.properties.code];
-							var food = foodDataHash[code]["menu_" + select_box_food];
-							food /= getArea(code);
+							var food = foodDataHash[code]["menu_"+select_box_food]
+								/ cityDataHash[code].area;
 							return "rgb(255," +
 								Math.floor(color(food)) +
 								"," + Math.floor(color(food)) +
@@ -172,13 +165,12 @@
 						})
 						.on("mouseover", function (d) {
 							var code = switchCodeHash[d.properties.code];
-							var food = foodDataHash[code]["menu_" + select_box_food];
-
 							div2.transition()
 								.duration(100)
 								.style("opacity", .9);
 							div2.html(cityDataHash[code].name + "<br>飲食店の密度(店/km^2): "
-								+ (food/getArea(code)).toFixed(2))
+								+ (foodDataHash[code]["menu_"+select_box_food]
+									/ cityDataHash[code].area).toFixed(2))
 								.style("left", (d3.event.pageX) + "px")
 								.style("top", (d3.event.pageY - 28) + "px");
 						})
@@ -188,47 +180,22 @@
 								.style("opacity", 0);
 						});
 				}
-
-				function refreshSvg2() {
-					var color = getScaleLinearSvg2();
-					food/=getArea(code);
-					svg2.selectAll("path").attr("fill", function (d) {
-						var code = switchCodeHash[d.properties.code];
-						var food = foodDataHash[code]["menu_" + select_box_food];
-					
-						return "rgb(255," +
-							Math.floor(color(food)) +
-							"," + Math.floor(color(food)) +
-							")";
-					});
-				}
-
-				function getScaleLinearSvg2() {
+				function getScaleLinearSvg2(){
 					var max = 0.0, min = 999999.0;
-					for (code of cityList) {
-						var food = foodDataHash[code]["menu_" + select_box_food];
-						food /= getArea(code);
-						if (food > max) {
-							max = food;
+					for (city of cityList) {
+						var foodDensity = foodDataHash[city]["menu_"+select_box_food]
+							/ cityDataHash[city].area;
+						if (foodDensity > max) {
+							max = foodDensity;
 						}
-						if (food < min) {
-							min = food;
+						if (foodDensity < min) {
+							min = foodDensity;
 						}
 					}
 					return d3.scaleLinear().domain([min, max]).range([255, 0]);
 				}
-
-				function getArea(code){
-					if (cityDataHash[code].area < MIN_CITY_AREA) {
-							return MIN_CITY_AREA;
-						}
-						else {
-							return cityDataHash[code].area;
-						}
-				}
 			});
 		});
-
 		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
 			try {
 				cityAreaHash = {};
@@ -253,8 +220,7 @@
 					if (popDataHash[d.code][d.date] == undefined) {
 						popDataHash[d.code][d.date] = {};
 					}
-					popDataHash[d.code][d.date][d.time] = {
-						pop_total: d.pop_total,
+					popDataHash[d.code][d.date][d.time] = { pop_total: d.pop_total,
 						pop_man_0_9: d.pop_man_0_9, pop_man_10_14: d.pop_man_10_14,
 						pop_man_15_19: d.pop_man_15_19, pop_man_20_24: d.pop_man_20_24,
 						pop_man_25_29: d.pop_man_25_29, pop_man_30_34: d.pop_man_30_34,
@@ -269,7 +235,7 @@
 						pop_woman_45_49: d.pop_woman_45_49, pop_woman_50_54: d.pop_woman_50_54,
 						pop_woman_55_59: d.pop_woman_55_59, pop_woman_60_64: d.pop_woman_60_64,
 						pop_woman_65_69: d.pop_woman_65_69, pop_woman_70_over: d.pop_woman_70_over
-					};
+						};
 				}
 				var foodData = await d3.json("./food_data.json");
 				for (d of foodData) {
@@ -309,3 +275,4 @@
 </body>
 
 </html>
+
