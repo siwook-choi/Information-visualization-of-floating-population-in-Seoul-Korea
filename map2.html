@@ -25,59 +25,36 @@
 			  border-radius: 8px;			
 			  pointer-events: none;			
 		  }
-		
-		  .noUi-target {
-    		border: 1px solid #D9D9D9;
-    		border-radius: 100000x;
-    		background: rgb(0, 255, 255);
-    		cursor: default;
-    		box-shadow: inset 0 0 1px #FFF;
-		 }
-		 .noUi-origin {
-			position: absolute;
-			right: 20000;
-			top: 30000;
-			
-		}
-		.noUi-handle{
-			width:50%;
-		}
-		.noUi-base:before,
-		.noUi-base:after {
-    		width: 17px;
-    		content: "";
-    		position: absolute;
-    		top: 0;
-    		height: 100%;
-    		display: block;
-		}
-		.noUi-base:before {
-    		left: -17px;
-		}
-		.noUi-base:after {
-    		left: 30%;
-		}
-
-
-			
 		  .wrapper{
 			  display: grid;
 			  grid-template-columns: 500px 200px;
 			  grid-template-rows: 400px 400px;
 		  }
-	</style>
+    </style>
 </head>
 
 <body>
-	<p id="slider" style="position:relative;left:700px;top:300px;"></p>
+    <div class="wrapper">
+		<div id='div1'></div>
+		<div id='div2'>
+			<p id="slider1_value"></p>
+			<p id="slider1"></p>
+		</div>
+		<div id='div3'></div>
+		<div id='div4'></div>
+	</div>
+
 	<script type="text/javascript">
-		var width = 960;
-		var height = 500;
-		var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
-		var div = d3.select("body").append("div")
+		var width = 600;
+		var height = 400;
+		var svg1 = d3.select("#div1").append("svg").attr("width", width).attr("height", height);
+		var svg2 = d3.select("#div3").append("svg").attr("width", width).attr("height", height);
+		var div1 = d3.select("#div1").append("div")
 			.attr("class", "tooltip")
 			.style("opacity", 0);
-		var color = d3.scaleLinear().domain([4000, 30000]).range([255, 0]);
+		var div2 = d3.select("#div2").append("div")
+			.attr("class", "tooltip")
+			.style("opacity", 0);
 		var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
 		initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList).then((err) => {
 			if (err) {
@@ -85,7 +62,6 @@
 				return;
 			}
 			var slider = document.getElementById('slider1');
-
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
@@ -95,11 +71,9 @@
 				var slider_age_lower, slider_age_upper;
 				var select_box_gender = "man";
 				var select_box_food = 4;
-
 				noUiSlider.create(slider, {
 					start: [20, 40],
 					connect: true,
-					tooltips: true,
 					step: 5,
 					margin: 5,
 					range: {
@@ -107,25 +81,18 @@
 						'max': 75
 					}
 				});
-
-
 				slider.noUiSlider.on('update', function (values, handle) {
 					slider_age_lower = parseInt(values[0]);
 					slider_age_upper = parseInt(values[1]);
 					if (slider_age_lower == 5) {
 						slider_age_lower = 0;
 					}
-
 					document.getElementById('slider1_value').innerHTML =
 						"age: " + slider_age_lower + " ~ " + (slider_age_upper - 1);
-
 					refreshSvg1();
 				});
-
-
 				initSvg1();
 				initSvg2();
-
 				function initSvg1() {
 					var color = getScaleLinearSvg1();
 					svg1.selectAll("path").data(seoul.features).enter().append("path").attr("d", path)
@@ -156,10 +123,8 @@
 								.style("opacity", 0);
 						});
 				}
-
 				function refreshSvg1() {
 					var color = getScaleLinearSvg1();
-
 					svg1.selectAll("path").attr("fill", function (d) {
 						var code = switchCodeHash[d.properties.code];
 						var pop = fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
@@ -170,7 +135,6 @@
 							")";
 					});
 				}
-
 				function getScaleLinearSvg1(){
 					var max = 0.0, min = 999999.0;
 					for (city of cityList) {
@@ -185,7 +149,6 @@
 					}
 					return d3.scaleLinear().domain([min, max]).range([255, 0]);
 				}
-
 				function initSvg2() {
 					var color = getScaleLinearSvg2();
 					console.log(color);
@@ -217,7 +180,6 @@
 								.style("opacity", 0);
 						});
 				}
-
 				function getScaleLinearSvg2(){
 					var max = 0.0, min = 999999.0;
 					for (city of cityList) {
@@ -234,10 +196,6 @@
 				}
 			});
 		});
-
-
-
-
 		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
 			try {
 				cityAreaHash = {};
@@ -317,3 +275,4 @@
 </body>
 
 </html>
+
