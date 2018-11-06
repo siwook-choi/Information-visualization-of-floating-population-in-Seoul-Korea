@@ -37,8 +37,8 @@
 	<div class="wrapper">
 		<div id='div1'></div>
 		<div id='div2'>
-			<p id="slider1_value"></p>
-			<p id="slider1"></p>
+			<p id="sliderAge_value"></p>
+			<p id="sliderAge"></p>
 		</div>
 		<div id='div3'></div>
 		<div id='div4'></div>
@@ -53,7 +53,7 @@
 		var div1 = d3.select("#div1").append("div")
 			.attr("class", "tooltip")
 			.style("opacity", 0);
-		var div2 = d3.select("#div2").append("div")
+		var div2 = d3.select("#div3").append("div")
 			.attr("class", "tooltip")
 			.style("opacity", 0);
 		var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
@@ -62,7 +62,7 @@
 				console.log(err);
 				return;
 			}
-			var slider = document.getElementById('slider1');
+			var sliderAge = document.getElementById('sliderAge');
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
@@ -72,7 +72,7 @@
 				var slider_age_lower, slider_age_upper;
 				var select_box_gender = "man";
 				var select_box_food = 4;
-				noUiSlider.create(slider, {
+				noUiSlider.create(sliderAge, {
 					start: [20, 40],
 					connect: true,
 					step: 5,
@@ -82,13 +82,13 @@
 						'max': 75
 					}
 				});
-				slider.noUiSlider.on('update', function (values, handle) {
+				sliderAge.noUiSlider.on('update', function (values, handle) {
 					slider_age_lower = parseInt(values[0]);
 					slider_age_upper = parseInt(values[1]);
 					if (slider_age_lower == 5) {
 						slider_age_lower = 0;
 					}
-					document.getElementById('slider1_value').innerHTML =
+					document.getElementById('sliderAge_value').innerHTML =
 						"age: " + slider_age_lower + " ~ " + (slider_age_upper - 1);
 					refreshSvg1();
 				});
