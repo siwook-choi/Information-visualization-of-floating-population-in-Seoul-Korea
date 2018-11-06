@@ -1,0 +1,202 @@
+[
+	{
+		"SIG_CD": "11320",
+		"SIG_KOR_NM": "도봉구",
+		"SIG_ENG_NM": "Dobong-gu",
+		"ESRI_PK": 0,
+		"SHAPE_AREA": 0.00211,
+		"SHAPE_LEN": 0.239901
+	},
+	{
+		"SIG_CD": "11380",
+		"SIG_KOR_NM": "은평구",
+		"SIG_ENG_NM": "Eunpyeong-gu",
+		"ESRI_PK": 1,
+		"SHAPE_AREA": 0.003041,
+		"SHAPE_LEN": 0.327143
+	},
+	{
+		"SIG_CD": "11230",
+		"SIG_KOR_NM": "동대문구",
+		"SIG_ENG_NM": "Dongdaemun-gu",
+		"ESRI_PK": 2,
+		"SHAPE_AREA": 0.001453,
+		"SHAPE_LEN": 0.182837
+	},
+	{
+		"SIG_CD": "11590",
+		"SIG_KOR_NM": "동작구",
+		"SIG_ENG_NM": "Dongjak-gu",
+		"ESRI_PK": 3,
+		"SHAPE_AREA": 0.00167,
+		"SHAPE_LEN": 0.237796
+	},
+	{
+		"SIG_CD": "11545",
+		"SIG_KOR_NM": "금천구",
+		"SIG_ENG_NM": "Geumcheon-gu",
+		"ESRI_PK": 4,
+		"SHAPE_AREA": 0.001325,
+		"SHAPE_LEN": 0.211649
+	},
+	{
+		"SIG_CD": "11530",
+		"SIG_KOR_NM": "구로구",
+		"SIG_ENG_NM": "Guro-gu",
+		"ESRI_PK": 5,
+		"SHAPE_AREA": 0.002047,
+		"SHAPE_LEN": 0.347568
+	},
+	{
+		"SIG_CD": "11110",
+		"SIG_KOR_NM": "종로구",
+		"SIG_ENG_NM": "Jongno-gu",
+		"ESRI_PK": 6,
+		"SHAPE_AREA": 0.002448,
+		"SHAPE_LEN": 0.2901
+	},
+	{
+		"SIG_CD": "11305",
+		"SIG_KOR_NM": "강북구",
+		"SIG_ENG_NM": "Gangbuk-gu",
+		"ESRI_PK": 7,
+		"SHAPE_AREA": 0.002412,
+		"SHAPE_LEN": 0.267441
+	},
+	{
+		"SIG_CD": "11260",
+		"SIG_KOR_NM": "중랑구",
+		"SIG_ENG_NM": "Jungnang-gu",
+		"ESRI_PK": 8,
+		"SHAPE_AREA": 0.001893,
+		"SHAPE_LEN": 0.184716
+	},
+	{
+		"SIG_CD": "11680",
+		"SIG_KOR_NM": "강남구",
+		"SIG_ENG_NM": "Gangnam-gu",
+		"ESRI_PK": 9,
+		"SHAPE_AREA": 0.004027,
+		"SHAPE_LEN": 0.348412
+	},
+	{
+		"SIG_CD": "11500",
+		"SIG_KOR_NM": "강서구",
+		"SIG_ENG_NM": "Gangseo-gu",
+		"ESRI_PK": 10,
+		"SHAPE_AREA": 0.004227,
+		"SHAPE_LEN": 0.435694
+	},
+	{
+		"SIG_CD": "11140",
+		"SIG_KOR_NM": "중구",
+		"SIG_ENG_NM": "Jung-gu",
+		"ESRI_PK": 11,
+		"SHAPE_AREA": 0.001017,
+		"SHAPE_LEN": 0.191242
+	},
+	{
+		"SIG_CD": "11740",
+		"SIG_KOR_NM": "강동구",
+		"SIG_ENG_NM": "Gangdong-gu",
+		"ESRI_PK": 12,
+		"SHAPE_AREA": 0.002504,
+		"SHAPE_LEN": 0.242596
+	},
+	{
+		"SIG_CD": "11215",
+		"SIG_KOR_NM": "광진구",
+		"SIG_ENG_NM": "Gwangjin-gu",
+		"ESRI_PK": 13,
+		"SHAPE_AREA": 0.001737,
+		"SHAPE_LEN": 0.186732
+	},
+	{
+		"SIG_CD": "11440",
+		"SIG_KOR_NM": "마포구",
+		"SIG_ENG_NM": "Mapo-gu",
+		"ESRI_PK": 14,
+		"SHAPE_AREA": 0.002415,
+		"SHAPE_LEN": 0.289336
+	},
+	{
+		"SIG_CD": "11620",
+		"SIG_KOR_NM": "관악구",
+		"SIG_ENG_NM": "Gwanak-gu",
+		"ESRI_PK": 15,
+		"SHAPE_AREA": 0.003012,
+		"SHAPE_LEN": 0.280092
+	},
+	{
+		"SIG_CD": "11650",
+		"SIG_KOR_NM": "서초구",
+		"SIG_ENG_NM": "Seocho-gu",
+		"ESRI_PK": 16,
+		"SHAPE_AREA": 0.004776,
+		"SHAPE_LEN": 0.437399
+	},
+	{
+		"SIG_CD": "11290",
+		"SIG_KOR_NM": "성북구",
+		"SIG_ENG_NM": "Seongbuk-gu",
+		"ESRI_PK": 17,
+		"SHAPE_AREA": 0.002511,
+		"SHAPE_LEN": 0.318673
+	},
+	{
+		"SIG_CD": "11350",
+		"SIG_KOR_NM": "노원구",
+		"SIG_ENG_NM": "Nowon-gu",
+		"ESRI_PK": 18,
+		"SHAPE_AREA": 0.00364,
+		"SHAPE_LEN": 0.309723
+	},
+	{
+		"SIG_CD": "11710",
+		"SIG_KOR_NM": "송파구",
+		"SIG_ENG_NM": "Songpa-gu",
+		"ESRI_PK": 19,
+		"SHAPE_AREA": 0.003449,
+		"SHAPE_LEN": 0.316773
+	},
+	{
+		"SIG_CD": "11200",
+		"SIG_KOR_NM": "성동구",
+		"SIG_ENG_NM": "Seongdong-gu",
+		"ESRI_PK": 20,
+		"SHAPE_AREA": 0.001714,
+		"SHAPE_LEN": 0.193793
+	},
+	{
+		"SIG_CD": "11410",
+		"SIG_KOR_NM": "서대문구",
+		"SIG_ENG_NM": "Seodaemun-gu",
+		"ESRI_PK": 21,
+		"SHAPE_AREA": 0.001811,
+		"SHAPE_LEN": 0.231131
+	},
+	{
+		"SIG_CD": "11470",
+		"SIG_KOR_NM": "양천구",
+		"SIG_ENG_NM": "Yangcheon-gu",
+		"ESRI_PK": 22,
+		"SHAPE_AREA": 0.001775,
+		"SHAPE_LEN": 0.294094
+	},
+	{
+		"SIG_CD": "11560",
+		"SIG_KOR_NM": "영등포구",
+		"SIG_ENG_NM": "Yeongdeungpo-gu",
+		"ESRI_PK": 23,
+		"SHAPE_AREA": 0.002512,
+		"SHAPE_LEN": 0.262953
+	},
+	{
+		"SIG_CD": "11170",
+		"SIG_KOR_NM": "용산구",
+		"SIG_ENG_NM": "Yongsan-gu",
+		"ESRI_PK": 24,
+		"SHAPE_AREA": 0.002234,
+		"SHAPE_LEN": 0.214496
+	}
+]

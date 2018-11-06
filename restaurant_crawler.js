@@ -12,14 +12,14 @@ var enum_food = [
 
 var fs = require('fs');
 var path = require('path');
-filePath = path.join(__dirname, 'code.json');
+filePath = path.join(__dirname, 'gu_data.json');
 
 var name_list = [];
 data = fs.readFileSync(filePath, { encoding: 'utf-8' });
 
 var jsonData = JSON.parse(data);
 jsonData.forEach(function (d) {
-    name_list.push({ id: d["H_DNG_CD"], name: d["DO_NM"] + d["CT_NM"] + d["H_DNG_NM"] });
+    name_list.push({ id: d["SIG_CD"], name: "서울" + d["SIG_KOR_NM"] });
 });
 
 
@@ -77,7 +77,7 @@ var timerId = setInterval(checkFinished, 1000);
 function checkFinished() {
     if (request_count == name_list.length * enum_food.length) {
         console.log(food_data);
-        fs.writeFile('food_data.json', JSON.stringify(food_data, null, '\t'), (err) => {
+        fs.writeFile('food_data_gu.json', JSON.stringify(food_data, null, '\t'), (err) => {
             if (err)
                 console.log(err);
         })
