@@ -43,6 +43,13 @@
 			<p id="sliderTime"></p>
 			<p id="sliderAge_value"></p>
 			<p id="sliderAge"></p>
+			<p class="gender-select" style="width:200px;">
+				<select id="selectGender">
+				  <option value="1" selected="selected">Total</option>
+				  <option value="2">Men</option>
+				  <option value="3">Women</option>
+				</select>
+			</p>
 		</div>
 		<div id='div3'></div>
 		<div id='div4'></div>
@@ -69,7 +76,7 @@
 			var sliderDate = document.getElementById('sliderDate');
 			var sliderTime = document.getElementById('sliderTime');
 			var sliderAge = document.getElementById('sliderAge');
-
+			var selectGender = document.getElementById('selectGender');
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
@@ -77,7 +84,7 @@
 				var slider_date = 20181020;
 				var slider_time = 14;
 				var slider_age_lower, slider_age_upper;
-				var select_box_gender = "man";
+				var select_box_gender = "total";
 				var select_box_food = 4;
 				noUiSlider.create(sliderDate, {
 					start: 12,
@@ -148,7 +155,16 @@
 						"age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
 					refreshSvg1();
 				});
-
+				selectGender.onchange = ()=>{
+					var gender = parseInt(selectGender.value);
+					switch(gender){
+						case 1:select_box_gender="total";break;
+						case 2:select_box_gender="man";break;
+						case 3:select_box_gender="woman";break;
+					}
+					console.log(select_box_gender);
+					refreshSvg1();
+				};
 
 
 				initSvg1();
