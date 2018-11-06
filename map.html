@@ -34,6 +34,7 @@
 </head>
 
 <body>
+<<<<<<< HEAD
 	<div class="wrapper">
 		<div id='div1'></div>
 		<p id="slider2_value"></p>
@@ -41,6 +42,18 @@
 		<div id='div2'>
 			<p id="slider1_value"></p>
 			<p id="slider1"></p>
+=======
+		<div class="wrapper">
+			<div id='div1'></div>
+			<div id='div2'>
+				<p id="sliderTime_value"></p>
+				<p id="sliderTime"></p>
+				<p id="sliderAge_value"></p>
+				<p id="sliderAge"></p>
+			</div>
+			<div id='div3'></div>
+			<div id='div4'></div>
+>>>>>>> f02ede819e9a06618de7c2c4acd5a703e21d307b
 		</div>
 		<div id='div3'></div>
 		<div id='div4'></div>
@@ -64,19 +77,20 @@
 				console.log(err);
 				return;
 			}
-			var slider = document.getElementById('slider1');
+			var sliderAge = document.getElementById('sliderAge');
+			var sliderTime = document.getElementById('sliderTime');
 
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
 				var path = d3.geoPath().projection(projection);
 				var slider_date = 20181023;
-				var slider_time = 16;
+				var slider_time ;
 				var slider_age_lower, slider_age_upper;
 				var select_box_gender = "woman";
 				var select_box_food = 7;
 
-				noUiSlider.create(slider, {
+				noUiSlider.create(sliderAge, {
 					start: [20, 40],
 					connect: true,
 					tooltips: true,
@@ -88,40 +102,45 @@
 					}
 				});
 
-				slider.noUiSlider.on('update', function (values, handle) {
-					slider_age_lower = parseInt(values[0]);
-					slider_age_upper = parseInt(values[1]);
-					if (slider_age_lower == 5) {
-						slider_age_lower = 0;
-					}
-
-					document.getElementById('slider1_value').innerHTML =
-						"age: " + slider_age_lower + " ~ " + (slider_age_upper - 1);
-
-					refreshSvg1();
-				});
-				noUiSlider.create(slider2, {
+				noUiSlider.create(sliderTime, {
 					start: [12],
+<<<<<<< HEAD
 					connect: [true, false],
+=======
+					connect: false,
+>>>>>>> f02ede819e9a06618de7c2c4acd5a703e21d307b
 					step: 1,
-					margin: 5,
 					range: {
 						'min': 0,
 						'max': 23
 					}
 				});
-				slider.noUiSlider.on('update', function (values, handle) {
+
+
+				sliderAge.noUiSlider.on('update', function (values, handle) {
 					slider_age_lower = parseInt(values[0]);
 					slider_age_upper = parseInt(values[1]);
 					if (slider_age_lower == 5) {
 						slider_age_lower = 0;
 					}
-					document.getElementById('slider1_value').innerHTML =
+
+					document.getElementById('sliderAge_value').innerHTML =
 						"age: " + slider_age_lower + " ~ " + (slider_age_upper - 1);
+<<<<<<< HEAD
 					document.getElementById('slider2_value').innerHTML =
+=======
+
+					refreshSvg1();
+				});
+				
+				sliderTime.noUiSlider.on('update', function (values, handle) {
+					slider_time = parseInt(values[0]);
+                    document.getElementById('sliderTime_value').innerHTML =
+>>>>>>> f02ede819e9a06618de7c2c4acd5a703e21d307b
 						"time: " + slider_time;
 					refreshSvg1();
 				});
+
 
 
 				initSvg1();
