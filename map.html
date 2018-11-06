@@ -37,6 +37,8 @@
 	<div class="wrapper">
 		<div id='div1'></div>
 		<div id='div2'>
+			<p id="sliderTime_value"></p>
+			<p id="sliderTime"></p>
 			<p id="sliderAge_value"></p>
 			<p id="sliderAge"></p>
 		</div>
@@ -45,7 +47,7 @@
 	</div>
 
 	<script type="text/javascript">
-		const MIN_CITY_AREA = 0.5;
+		const MIN_CITY_AREA = 1.0;
 		var width = 600;
 		var height = 400;
 		var svg1 = d3.select("#div1").append("svg").attr("width", width).attr("height", height);
@@ -63,6 +65,7 @@
 				return;
 			}
 			var sliderAge = document.getElementById('sliderAge');
+			var sliderTime = document.getElementById('sliderTime');
 			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
 				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
 				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
@@ -82,6 +85,15 @@
 						'max': 75
 					}
 				});
+				noUiSlider.create(sliderTime, {
+					start: 12,
+					connect: false,
+					step: 1,
+					range: {
+						'min': 0,
+						'max': 23
+					}
+				});
 				sliderAge.noUiSlider.on('update', function (values, handle) {
 					slider_age_lower = parseInt(values[0]);
 					slider_age_upper = parseInt(values[1]);
@@ -89,9 +101,17 @@
 						slider_age_lower = 0;
 					}
 					document.getElementById('sliderAge_value').innerHTML =
-						"age: " + slider_age_lower + " ~ " + (slider_age_upper - 1);
+						"age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
 					refreshSvg1();
 				});
+				
+				sliderTime.noUiSlider.on('update', function(value, handle){
+					slider_time = parseInt(value);
+					document.getElementById('sliderTime_value').innerHTML =
+						"time: " + slider_time + "時";
+					refreshSvg1();
+				})
+
 				initSvg1();
 				initSvg2();
 				function initSvg1() {
