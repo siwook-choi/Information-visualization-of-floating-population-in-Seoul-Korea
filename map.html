@@ -64,7 +64,7 @@
 					<option value="7">カフェ</option>
 					<option value="8">バイキング</option>
 					<option value="9">etc</option>
-
+					<option value="10">billiard</option>
 				</select>
 			</p>
 		</div>
@@ -82,16 +82,18 @@
 		var div2 = d3.select("#div3").append("div")
 			.attr("class", "tooltip")
 			.style("opacity", 0);
-		var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
+
 
 		init();
 
 		async function init() {
+			var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
 			var init_err = await initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList);
 			if (init_err) {
 				console.log(init_err);
 				return;
 			}
+
 			var sliderDate = document.getElementById('sliderDate');
 			var sliderTime = document.getElementById('sliderTime');
 			var sliderAge = document.getElementById('sliderAge');
@@ -110,7 +112,8 @@
 
 			var gu_data = await d3.json("./gu_data.json");
 
-			console.log(foodDataHash);
+			var billiard_hash = {};
+			await initBilliard(billiard_hash);
 
 			var slider_date = 20181020;
 			var slider_time = 14;
@@ -260,6 +263,33 @@
 				}
 				return d3.scaleLinear().domain([min, max]).range([255, 0]);
 			}
+
+			function fetchPopData(code, date, time, age_lower, age_upper, gender) {
+				var sum = 0.0;
+				for (var age = age_lower; age < age_upper; age += 5) {
+					var currentHash = popDataHash[code][date][time];
+					var ageString;
+					if (age >= 10 && age < 70) {
+						ageString = "_" + age + "_" + (age + 4);
+					}
+					if (age < 10) {
+						ageString = "_0_9";
+						age = 5;
+					}
+					if (age >= 70) {
+						ageString = "_70_over";
+					}
+					if (gender == "total") {
+						sum += parseFloat(currentHash["pop_" + "man" + ageString]);
+						sum += parseFloat(currentHash["pop_" + "woman" + ageString]);
+					}
+					else {
+						sum += parseFloat(currentHash[("pop_" + gender + ageString)]);
+					}
+				}
+				return sum;
+			}
+
 			function initSvg2() {
 				var color = getScaleLinearSvg2();
 
@@ -267,7 +297,7 @@
 					.attr("stroke", "#333333").attr("stroke-width", 0.5)
 					.attr("fill", function (d) {
 						var code = switchCodeHash[d.properties.code];
-						var food = foodDataHash[code]["menu_" + select_box_food];
+						var food = fetchFoodData(code, select_box_food);
 						food /= getArea(code);
 						return "rgb(255," +
 							Math.floor(color(food)) +
@@ -276,7 +306,7 @@
 					})
 					.on("mouseover", function (d) {
 						var code = switchCodeHash[d.properties.code];
-						var food = foodDataHash[code]["menu_" + select_box_food];
+						var food = fetchFoodData(code, select_box_food);
 						food /= getArea(code);
 						div2.transition()
 							.duration(100)
@@ -297,7 +327,7 @@
 				var color = getScaleLinearSvg2();
 				svg2.selectAll("path").attr("fill", function (d) {
 					var code = switchCodeHash[d.properties.code];
-					var food = foodDataHash[code]["menu_" + select_box_food];
+					var food = fetchFoodData(code, select_box_food);
 					food /= getArea(code);
 					return "rgb(255," +
 						Math.floor(color(food)) +
@@ -309,7 +339,7 @@
 			function getScaleLinearSvg2() {
 				var max = 0.0, min = 999999.0;
 				for (code of cityList) {
-					var food = foodDataHash[code]["menu_" + select_box_food];
+					var food = fetchFoodData(code, select_box_food);
 					food /= getArea(code);
 					if (food > max) {
 						max = food;
@@ -328,7 +358,34 @@
 					return cityDataHash[code].area;
 				}
 			}
+
+			function fetchFoodData(code, select_box_food) {
+				if (select_box_food < 10) {
+					return foodDataHash[code]["menu_" + select_box_food]
+				}
+				else if (select_box_food == 10) {
+					return billiard_hash[code];
+				}
+			}
 		};
+
+		async function initBilliard(billiard_hash) {
+			var dong_data = await d3.csv("./KIKmix.csv");
+			var dong_hash = {};
+			for (dong of dong_data) {
+				dong_hash[dong["DONG_OLD"]] = dong["H_DNG_CD"].substr(0, 8);
+				billiard_hash[dong["H_DNG_CD"].substr(0, 8)] = 0;
+			}
+			console.log(dong_hash);
+			var billiard_data = await d3.json("./billiard_data.json");
+			for (billiard of billiard_data["DATA"]) {
+				if (billiard["addr_old"] != null) {
+					var addr = billiard["addr_old"].split(" ");
+					billiard_hash[dong_hash[addr[2]]]++;
+				}
+			}
+			console.log(billiard_hash);
+		}
 		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
 			try {
 				cityAreaHash = {};
@@ -380,31 +437,7 @@
 			}
 			return false;
 		}
-		function fetchPopData(code, date, time, age_lower, age_upper, gender) {
-			var sum = 0.0;
-			for (var age = age_lower; age < age_upper; age += 5) {
-				var currentHash = popDataHash[code][date][time];
-				var ageString;
-				if (age >= 10 && age < 70) {
-					ageString = "_" + age + "_" + (age + 4);
-				}
-				if (age < 10) {
-					ageString = "_0_9";
-					age = 5;
-				}
-				if (age >= 70) {
-					ageString = "_70_over";
-				}
-				if (gender == "total") {
-					sum += parseFloat(currentHash["pop_" + "man" + ageString]);
-					sum += parseFloat(currentHash["pop_" + "woman" + ageString]);
-				}
-				else {
-					sum += parseFloat(currentHash[("pop_" + gender + ageString)]);
-				}
-			}
-			return sum;
-		}
+
 	</script>
 </body>
 
