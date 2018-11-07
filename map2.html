@@ -21,11 +21,10 @@
 			var path = d3.geoPath().projection(projection);
 			var guData = [];
 			svg.selectAll("path").data(seoul.features).enter().append("path").attr("d", path).attr("stroke", "#333333").attr("stroke-width", 0.5).attr("fill", (d)=>{
-				guData.push(d.properties);
 			});
-
-			console.log(JSON.stringify(guData,null,'\t'));
 		});
+
+		
 	</script>
 </body>
 
