@@ -64,7 +64,7 @@
 					<option value="7">カフェ</option>
 					<option value="8">バイキング</option>
 					<option value="9">etc</option>
-
+					<option value="10">billiard</option>
 				</select>
 			</p>
 		</div>
@@ -82,148 +82,136 @@
 		var div2 = d3.select("#div3").append("div")
 			.attr("class", "tooltip")
 			.style("opacity", 0);
-		var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
-		initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList).then((err) => {
-			if (err) {
-				console.log(err);
+
+
+		init();
+
+		async function init() {
+			var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
+			var init_err = await initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList);
+			if (init_err) {
+				console.log(init_err);
 				return;
 			}
+
 			var sliderDate = document.getElementById('sliderDate');
 			var sliderTime = document.getElementById('sliderTime');
 			var sliderAge = document.getElementById('sliderAge');
 			var selectGender = document.getElementById('selectGender');
 			var selectRestaurantType = document.getElementById('selectRestaurantType');
-			d3.json("./lib/seoul_submunicipalities_topo_simple.topojson").then(function (data) {
-				var seoul = topojson.feature(data, data.objects.seoul_submunicipalities_geo);
-				var projection = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
-				var path = d3.geoPath().projection(projection);
-				var slider_date = 20181020;
-				var slider_time = 14;
-				var slider_age_lower, slider_age_upper;
-				var select_box_gender = "total";
-				var select_box_food = 4;
-				noUiSlider.create(sliderDate, {
-					start: 12,
-					connect: false,
-					step: 1,
-					range: {
-						'min': 1,
-						'max': 24
-					}
-				});
 
-				noUiSlider.create(sliderTime, {
-					start: 12,
-					connect: false,
-					step: 1,
-					range: {
-						'min': 0,
-						'max': 23
-					}
-				});
+			var seoul_dong_data = await d3.json("./lib/seoul_submunicipalities_topo_simple.topojson");
+			var seoul_dong = topojson.feature(seoul_dong_data, seoul_dong_data.objects.seoul_submunicipalities_geo);
+			var projection_dong = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
+			var path_dong = d3.geoPath().projection(projection_dong);
 
-				noUiSlider.create(sliderAge, {
-					start: [20, 40],
-					connect: true,
-					step: 5,
-					margin: 5,
-					range: {
-						'min': 0,
-						'max': 75
-					}
-				});
+			var seoul_gu_data = await d3.json("./lib/seoul_municipalities_topo_simple.topojson");
+			var seoul_gu = topojson.feature(seoul_gu_data, seoul_gu_data.objects.seoul_municipalities_geo);
+			var projection_gu = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
+			var path_gu = d3.geoPath().projection(projection_gu);
 
-				sliderDate.noUiSlider.on('update', function (value, handle) {
-					var date = parseInt(value);
+			var gu_data = await d3.json("./gu_data.json");
 
-					document.getElementById('sliderDate_value').innerHTML =
-						"date: 2018年10月" + date + "日";
-					if (date < 10) {
-						slider_date = "2018100" + date;
-					}
-					else {
-						slider_date = "201810" + date;
-					}
+			var billiard_hash = {};
+			await initBilliard(billiard_hash);
 
-					refreshSvg1();
-				});
-
-				sliderTime.noUiSlider.on('update', function (value, handle) {
-					var time = parseInt(value);
-					document.getElementById('sliderTime_value').innerHTML =
-						"time: " + time + "時";
-					if (time < 10) {
-						slider_time = "0" + time;
-					}
-					else {
-						slider_time = "" + time;
-					}
-					refreshSvg1();
-				});
-
-				sliderAge.noUiSlider.on('update', function (values, handle) {
-					slider_age_lower = parseInt(values[0]);
-					slider_age_upper = parseInt(values[1]);
-					if (slider_age_lower == 5) {
-						slider_age_lower = 0;
-					}
-					document.getElementById('sliderAge_value').innerHTML =
-						"age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
-					refreshSvg1();
-				});
-				selectGender.onchange = () => {
-					var gender = parseInt(selectGender.value);
-					switch (gender) {
-						case 1: select_box_gender = "total"; break;
-						case 2: select_box_gender = "man"; break;
-						case 3: select_box_gender = "woman"; break;
-					}
-					console.log(select_box_gender);
-					refreshSvg1();
-				};
-				selectRestaurantType.onchange = () => {
-					var restaurant = parseInt(selectRestaurantType.value);
-					select_box_food = restaurant;
-					console.log(select_box_food);
-					refreshSvg2();
-				};
-
-
-				initSvg1();
-				initSvg2();
-				function initSvg1() {
-					var color = getScaleLinearSvg1();
-					svg1.selectAll("path").data(seoul.features).enter().append("path").attr("d", path)
-						.attr("stroke", "#333333").attr("stroke-width", 0.5)
-						.attr("fill", function (d) {
-							var code = switchCodeHash[d.properties.code];
-							var pop = fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
-								/ cityDataHash[code].area;
-							return "rgb(255," +
-								Math.floor(color(pop)) +
-								"," + Math.floor(color(pop)) +
-								")";
-						})
-						.on("mouseover", function (d) {
-							var code = switchCodeHash[d.properties.code];
-							div1.transition()
-								.duration(100)
-								.style("opacity", .9);
-							div1.html(cityDataHash[code].name + "<br>人口密度(人/km^2):<br>"
-								+ (fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
-									/ cityDataHash[code].area).toFixed(2))
-								.style("left", (d3.event.pageX) + "px")
-								.style("top", (d3.event.pageY - 28) + "px");
-						})
-						.on("mouseout", function (d) {
-							div1.transition()
-								.duration(200)
-								.style("opacity", 0);
-						});
+			var slider_date = 20181020;
+			var slider_time = 14;
+			var slider_age_lower, slider_age_upper;
+			var select_box_gender = "total";
+			var select_box_food = 4;
+			noUiSlider.create(sliderDate, {
+				start: 12,
+				connect: false,
+				step: 1,
+				range: {
+					'min': 1,
+					'max': 24
 				}
-				function refreshSvg1() {
-					var color = getScaleLinearSvg1();
-					svg1.selectAll("path").attr("fill", function (d) {
+			});
+
+			noUiSlider.create(sliderTime, {
+				start: 12,
+				connect: false,
+				step: 1,
+				range: {
+					'min': 0,
+					'max': 23
+				}
+			});
+
+			noUiSlider.create(sliderAge, {
+				start: [20, 40],
+				connect: true,
+				step: 5,
+				margin: 5,
+				range: {
+					'min': 0,
+					'max': 75
+				}
+			});
+
+			sliderDate.noUiSlider.on('update', function (value, handle) {
+				var date = parseInt(value);
+
+				document.getElementById('sliderDate_value').innerHTML =
+					"date: 2018年10月" + date + "日";
+				if (date < 10) {
+					slider_date = "2018100" + date;
+				}
+				else {
+					slider_date = "201810" + date;
+				}
+
+				refreshSvg1();
+			});
+
+			sliderTime.noUiSlider.on('update', function (value, handle) {
+				var time = parseInt(value);
+				document.getElementById('sliderTime_value').innerHTML =
+					"time: " + time + "時";
+				if (time < 10) {
+					slider_time = "0" + time;
+				}
+				else {
+					slider_time = "" + time;
+				}
+				refreshSvg1();
+			});
+
+			sliderAge.noUiSlider.on('update', function (values, handle) {
+				slider_age_lower = parseInt(values[0]);
+				slider_age_upper = parseInt(values[1]);
+				if (slider_age_lower == 5) {
+					slider_age_lower = 0;
+				}
+				document.getElementById('sliderAge_value').innerHTML =
+					"age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
+				refreshSvg1();
+			});
+			selectGender.onchange = () => {
+				var gender = parseInt(selectGender.value);
+				switch (gender) {
+					case 1: select_box_gender = "total"; break;
+					case 2: select_box_gender = "man"; break;
+					case 3: select_box_gender = "woman"; break;
+				}
+				refreshSvg1();
+			};
+			selectRestaurantType.onchange = () => {
+				var restaurant = parseInt(selectRestaurantType.value);
+				select_box_food = restaurant;
+				refreshSvg2();
+			};
+
+
+			initSvg1();
+			initSvg2();
+			function initSvg1() {
+				var color = getScaleLinearSvg1();
+				svg1.selectAll("path").data(seoul_dong.features).enter().append("path").attr("d", path_dong)
+					.attr("stroke", "#333333").attr("stroke-width", 0.5)
+					.attr("fill", function (d) {
 						var code = switchCodeHash[d.properties.code];
 						var pop = fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
 							/ cityDataHash[code].area;
@@ -231,90 +219,173 @@
 							Math.floor(color(pop)) +
 							"," + Math.floor(color(pop)) +
 							")";
-					});
-				}
-				function getScaleLinearSvg1() {
-					var max = 0.0, min = 999999.0;
-					for (code of cityList) {
-						var popDensity = fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
-							/ cityDataHash[code].area;
-						if (popDensity > max) {
-							max = popDensity;
-						}
-						if (popDensity < min) {
-							min = popDensity;
-						}
-					}
-					return d3.scaleLinear().domain([min, max]).range([255, 0]);
-				}
-				function initSvg2() {
-					var color = getScaleLinearSvg2();
-					svg2.selectAll("path").data(seoul.features).enter().append("path").attr("d", path)
-						.attr("stroke", "#333333").attr("stroke-width", 0.5)
-						.attr("fill", function (d) {
-							var code = switchCodeHash[d.properties.code];
-							var food = foodDataHash[code]["menu_" + select_box_food];
-							food /= getArea(code);
-							return "rgb(255," +
-								Math.floor(color(food)) +
-								"," + Math.floor(color(food)) +
-								")";
-						})
-						.on("mouseover", function (d) {
-							var code = switchCodeHash[d.properties.code];
-							var food = foodDataHash[code]["menu_" + select_box_food];
-							div2.transition()
-								.duration(100)
-								.style("opacity", .9);
-							div2.html(cityDataHash[code].name + "<br>飲食店の密度(店/km^2): "
-								+ (food / getArea(code)).toFixed(2))
-								.style("left", (d3.event.pageX) + "px")
-								.style("top", (d3.event.pageY - 28) + "px");
-						})
-						.on("mouseout", function (d) {
-							div2.transition()
-								.duration(200)
-								.style("opacity", 0);
-						});
-				}
-
-				function refreshSvg2() {
-					var color = getScaleLinearSvg2();
-					svg2.selectAll("path").attr("fill", function (d) {
+					})
+					.on("mouseover", function (d) {
 						var code = switchCodeHash[d.properties.code];
-						var food = foodDataHash[code]["menu_" + select_box_food];
+						div1.transition()
+							.duration(100)
+							.style("opacity", .9);
+						div1.html(cityDataHash[code].name + "<br>人口密度(人/km^2):<br>"
+							+ (fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+								/ cityDataHash[code].area).toFixed(2))
+							.style("left", (d3.event.pageX) + "px")
+							.style("top", (d3.event.pageY - 28) + "px");
+					})
+					.on("mouseout", function (d) {
+						div1.transition()
+							.duration(200)
+							.style("opacity", 0);
+					});
+			}
+			function refreshSvg1() {
+				var color = getScaleLinearSvg1();
+				svg1.selectAll("path").attr("fill", function (d) {
+					var code = switchCodeHash[d.properties.code];
+					var pop = fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+						/ cityDataHash[code].area;
+					return "rgb(255," +
+						Math.floor(color(pop)) +
+						"," + Math.floor(color(pop)) +
+						")";
+				});
+			}
+			function getScaleLinearSvg1() {
+				var max = 0.0, min = 999999.0;
+				for (code of cityList) {
+					var popDensity = fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
+						/ cityDataHash[code].area;
+					if (popDensity > max) {
+						max = popDensity;
+					}
+					if (popDensity < min) {
+						min = popDensity;
+					}
+				}
+				return d3.scaleLinear().domain([min, max]).range([255, 0]);
+			}
+
+			function fetchPopData(code, date, time, age_lower, age_upper, gender) {
+				var sum = 0.0;
+				for (var age = age_lower; age < age_upper; age += 5) {
+					var currentHash = popDataHash[code][date][time];
+					var ageString;
+					if (age >= 10 && age < 70) {
+						ageString = "_" + age + "_" + (age + 4);
+					}
+					if (age < 10) {
+						ageString = "_0_9";
+						age = 5;
+					}
+					if (age >= 70) {
+						ageString = "_70_over";
+					}
+					if (gender == "total") {
+						sum += parseFloat(currentHash["pop_" + "man" + ageString]);
+						sum += parseFloat(currentHash["pop_" + "woman" + ageString]);
+					}
+					else {
+						sum += parseFloat(currentHash[("pop_" + gender + ageString)]);
+					}
+				}
+				return sum;
+			}
+
+			function initSvg2() {
+				var color = getScaleLinearSvg2();
+
+				svg2.selectAll("path").data(seoul_dong.features).enter().append("path").attr("d", path_dong)
+					.attr("stroke", "#333333").attr("stroke-width", 0.5)
+					.attr("fill", function (d) {
+						var code = switchCodeHash[d.properties.code];
+						var food = fetchFoodData(code, select_box_food);
 						food /= getArea(code);
 						return "rgb(255," +
 							Math.floor(color(food)) +
 							"," + Math.floor(color(food)) +
 							")";
-					});
-				}
-
-				function getScaleLinearSvg2() {
-					var max = 0.0, min = 999999.0;
-					for (code of cityList) {
-						var food = foodDataHash[code]["menu_" + select_box_food];
+					})
+					.on("mouseover", function (d) {
+						var code = switchCodeHash[d.properties.code];
+						var food = fetchFoodData(code, select_box_food);
 						food /= getArea(code);
-						if (food > max) {
-							max = food;
-						}
-						if (food < min) {
-							min = food;
-						}
+						div2.transition()
+							.duration(100)
+							.style("opacity", .9);
+						div2.html(cityDataHash[code].name + "<br>飲食店の密度(店/km^2): "
+							+ (food).toFixed(2))
+							.style("left", (d3.event.pageX) + "px")
+							.style("top", (d3.event.pageY - 28) + "px");
+					})
+					.on("mouseout", function (d) {
+						div2.transition()
+							.duration(200)
+							.style("opacity", 0);
+					});
+			}
+
+			function refreshSvg2() {
+				var color = getScaleLinearSvg2();
+				svg2.selectAll("path").attr("fill", function (d) {
+					var code = switchCodeHash[d.properties.code];
+					var food = fetchFoodData(code, select_box_food);
+					food /= getArea(code);
+					return "rgb(255," +
+						Math.floor(color(food)) +
+						"," + Math.floor(color(food)) +
+						")";
+				});
+			}
+
+			function getScaleLinearSvg2() {
+				var max = 0.0, min = 999999.0;
+				for (code of cityList) {
+					var food = fetchFoodData(code, select_box_food);
+					food /= getArea(code);
+					if (food > max) {
+						max = food;
 					}
-					return d3.scaleLinear().domain([min, max]).range([255, 0]);
+					if (food < min) {
+						min = food;
+					}
 				}
-				function getArea(code) {
-					if (cityDataHash[code].area < MIN_CITY_AREA) {
-						return MIN_CITY_AREA;
-					}
-					else {
-						return cityDataHash[code].area;
-					}
+				return d3.scaleLinear().domain([min, max]).range([255, 0]);
+			}
+			function getArea(code) {
+				if (cityDataHash[code].area < MIN_CITY_AREA) {
+					return MIN_CITY_AREA;
 				}
-			});
-		});
+				else {
+					return cityDataHash[code].area;
+				}
+			}
+
+			function fetchFoodData(code, select_box_food) {
+				if (select_box_food < 10) {
+					return foodDataHash[code]["menu_" + select_box_food]
+				}
+				else if (select_box_food == 10) {
+					return billiard_hash[code];
+				}
+			}
+		};
+
+		async function initBilliard(billiard_hash) {
+			var dong_data = await d3.csv("./KIKmix.csv");
+			var dong_hash = {};
+			for (dong of dong_data) {
+				dong_hash[dong["DONG_OLD"]] = dong["H_DNG_CD"].substr(0, 8);
+				billiard_hash[dong["H_DNG_CD"].substr(0, 8)] = 0;
+			}
+			console.log(dong_hash);
+			var billiard_data = await d3.json("./billiard_data.json");
+			for (billiard of billiard_data["DATA"]) {
+				if (billiard["addr_old"] != null) {
+					var addr = billiard["addr_old"].split(" ");
+					billiard_hash[dong_hash[addr[2]]]++;
+				}
+			}
+			console.log(billiard_hash);
+		}
 		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
 			try {
 				cityAreaHash = {};
@@ -366,31 +437,7 @@
 			}
 			return false;
 		}
-		function fetchPopData(code, date, time, age_lower, age_upper, gender) {
-			var sum = 0.0;
-			for (var age = age_lower; age < age_upper; age += 5) {
-				var currentHash = popDataHash[code][date][time];
-				var ageString;
-				if (age >= 10 && age < 70) {
-					ageString = "_" + age + "_" + (age + 4);
-				}
-				if (age < 10) {
-					ageString = "_0_9";
-					age = 5;
-				}
-				if (age >= 70) {
-					ageString = "_70_over";
-				}
-				if (gender == "total") {
-					sum += parseFloat(currentHash["pop_" + "man" + ageString]);
-					sum += parseFloat(currentHash["pop_" + "woman" + ageString]);
-				}
-				else {
-					sum += parseFloat(currentHash[("pop_" + gender + ageString)]);
-				}
-			}
-			return sum;
-		}
+
 	</script>
 </body>
 
