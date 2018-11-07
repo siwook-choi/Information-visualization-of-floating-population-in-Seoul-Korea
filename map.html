@@ -281,7 +281,7 @@
 						div2.transition()
 							.duration(100)
 							.style("opacity", .9);
-						div2.html(cityDataHash[code] + "<br>飲食店の密度(店/km^2): "
+						div2.html(cityDataHash[code].name + "<br>飲食店の密度(店/km^2): "
 							+ (food).toFixed(2))
 							.style("left", (d3.event.pageX) + "px")
 							.style("top", (d3.event.pageY - 28) + "px");

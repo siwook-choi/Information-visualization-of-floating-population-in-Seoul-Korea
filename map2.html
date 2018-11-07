@@ -269,7 +269,7 @@
 						var code = d.properties["SIG_CD"];
 						console.log(d);
 						var food = foodDataHash[code]["menu_" + select_box_food];
-						food /= d.properties["SHAPE_AREA"];
+						food /= d.properties["SHAPE_AREA"]*9770;
 						return "rgb(255," +
 							Math.floor(color(food)) +
 							"," + Math.floor(color(food)) +
@@ -278,7 +278,7 @@
 					.on("mouseover", function (d) {
 						var code = d.properties["SIG_CD"];
 						var food = foodDataHash[code]["menu_" + select_box_food];
-						food /= d.properties["SHAPE_AREA"];
+						food /= d.properties["SHAPE_AREA"]*9770;
 						div2.transition()
 							.duration(100)
 							.style("opacity", .9);
@@ -299,7 +299,7 @@
 				svg2.selectAll("path").attr("fill", function (d) {
 					var code = d.properties["SIG_CD"];
 					var food = foodDataHash[code]["menu_" + select_box_food];
-					food /= d.properties["SHAPE_AREA"];
+					food /= d.properties["SHAPE_AREA"]*9770;
 					return "rgb(255," +
 						Math.floor(color(food)) +
 						"," + Math.floor(color(food)) +
@@ -312,7 +312,7 @@
 				for (gu of gu_data) {
 					var code = gu["SIG_CD"];
 					var food = foodDataHash[code]["menu_" + select_box_food];
-					food /= gu["SHAPE_AREA"];
+					food /= gu["SHAPE_AREA"]*9770;
 					if (food > max) {
 						max = food;
 					}
