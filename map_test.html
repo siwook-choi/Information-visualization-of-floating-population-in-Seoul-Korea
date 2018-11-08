@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <script src="./lib/d3.js" charset="utf-8"></script>
+    <script src="./lib/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?clientId=Fj9YAAdNpZn3oybty5ZB&submodules=geocoder"></script>
+    <script src="./lib/distribute/nouislider.min.js"></script>
+    <link rel="stylesheet" href="./lib/distribute/nouislider.min.css">
+    <style>
+        .wrapper{
+			  display: grid;
+			  grid-template-columns: 600px 200px;
+			  grid-template-rows: 500px 500px;
+		  }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id='div1'></div>
+        <div id='div2'>
+            <p id="sliderDate_value"></p>
+            <p id="sliderDate"></p>
+            <p id="sliderTime_value"></p>
+            <p id="sliderTime"></p>
+            <p id="sliderAge_value"></p>
+            <p id="sliderAge"></p>
+            <p>性別</p>
+            <p class="gender-select" style="width:200px;">
+                <select id="selectGender">
+                    <option value="1" selected="selected">Total</option>
+                    <option value="2">Men</option>
+                    <option value="3">Women</option>
+                </select>
+            </p>
+        </div>
+        <div id='div3'></div>
+        <div id='div4'>
+            <p>検索品目</p>
+            <p class="restaurant-select" style="width:200px;">
+                <select id="selectRestaurantType">
+                    <option value="1" selected="selected">韓国料理</option>
+                    <option value="2">洋食</option>
+                    <option value="3">アジア料理</option>
+                    <option value="4">和食</option>
+                    <option value="5">中国料理</option>
+                    <option value="6">屋台料理</option>
+                    <option value="7">カフェ</option>
+                    <option value="8">バイキング</option>
+                    <option value="9">etc</option>
+                    <option value="10">billiard</option>
+                </select>
+            </p>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var mapDiv = document.getElementById("div1");
+        var map = new naver.maps.Map(mapDiv, {
+            zoom: 6
+        });
+
+        var mapDiv2 = document.getElementById("div3");
+        var map2 = new naver.maps.Map(mapDiv2, {
+            zoom: 6
+        });
+
+        var tooltip = $('<div style="position:absolute;z-index:1000;padding:5px 10px;background-color:#fff;border:solid 2px #000;font-size:14px;pointer-events:none;display:none;"></div>');
+        tooltip.appendTo(map.getPanes().floatPane);
+        var tooltip2 = $('<div style="position:absolute;z-index:1000;padding:5px 10px;background-color:#fff;border:solid 2px #000;font-size:14px;pointer-events:none;display:none;"></div>');
+        tooltip2.appendTo(map2.getPanes().floatPane);
+
+        var regionGeoJson = [];
+        var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
+
+        var slider_date,
+            slider_time,
+            slider_age_lower,
+            slider_age_upper,
+            select_box_gender = "total",
+            select_box_food = 4;
+
+        init();
+
+        async function init() {
+            var init_data_err = await initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList);
+            if (init_data_err) {
+                console.log(init_err);
+                return;
+            }
+
+            var seoul_geojson = await d3.json("./lib/seoul_submunicipalities_topo_simple.geojson");
+            for (geojson of seoul_geojson.features) {
+                regionGeoJson.push(geojson);
+            }
+
+            var sliderDate = document.getElementById('sliderDate');
+            var sliderTime = document.getElementById('sliderTime');
+            var sliderAge = document.getElementById('sliderAge');
+            var selectGender = document.getElementById('selectGender');
+            var selectRestaurantType = document.getElementById('selectRestaurantType');
+
+            noUiSlider.create(sliderDate, {
+                start: 12,
+                connect: false,
+                step: 1,
+                range: {
+                    'min': 1,
+                    'max': 24
+                }
+            });
+
+            noUiSlider.create(sliderTime, {
+                start: 12,
+                connect: false,
+                step: 1,
+                range: {
+                    'min': 0,
+                    'max': 23
+                }
+            });
+
+            noUiSlider.create(sliderAge, {
+                start: [20, 40],
+                connect: true,
+                step: 5,
+                margin: 5,
+                range: {
+                    'min': 0,
+                    'max': 75
+                }
+            });
+
+            sliderDate.noUiSlider.on('update', function (value, handle) {
+                var date = parseInt(value);
+
+                document.getElementById('sliderDate_value').innerHTML =
+                    "date: 2018年10月" + date + "日";
+                if (date < 10) {
+                    slider_date = "2018100" + date;
+                }
+                else {
+                    slider_date = "201810" + date;
+                }
+
+                refreshSvg1();
+            });
+
+            sliderTime.noUiSlider.on('update', function (value, handle) {
+                var time = parseInt(value);
+                document.getElementById('sliderTime_value').innerHTML =
+                    "time: " + time + "時";
+                if (time < 10) {
+                    slider_time = "0" + time;
+                }
+                else {
+                    slider_time = "" + time;
+                }
+                refreshSvg1();
+            });
+
+            sliderAge.noUiSlider.on('update', function (values, handle) {
+                slider_age_lower = parseInt(values[0]);
+                slider_age_upper = parseInt(values[1]);
+                if (slider_age_lower == 5) {
+                    slider_age_lower = 0;
+                }
+                if (slider_age_upper == 75) {
+                    document.getElementById('sliderAge_value').innerHTML =
+                        "age: " + slider_age_lower + " ～ " + "歳";
+                }
+                else {
+                    document.getElementById('sliderAge_value').innerHTML =
+                        "age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
+                }
+                refreshSvg1();
+            });
+            selectGender.onchange = () => {
+                var gender = parseInt(selectGender.value);
+                switch (gender) {
+                    case 1: select_box_gender = "total"; break;
+                    case 2: select_box_gender = "man"; break;
+                    case 3: select_box_gender = "woman"; break;
+                }
+                refreshSvg1();
+            };
+            selectRestaurantType.onchange = () => {
+                var restaurant = parseInt(selectRestaurantType.value);
+                select_box_food = restaurant;
+                refreshSvg2();
+            };
+
+            startDataLayer();
+            refreshSvg1();
+            refreshSvg2();
+        }
+
+        function refreshSvg1() {
+            var color = getScaleLinearSvg1();
+            map.data.setStyle(function (feature) {
+                var code = switchCodeHash[feature.property_code];
+                var popDensity = fetchPopData(code)
+                    / cityDataHash[code].area;
+                var styleOptions = {
+                    fillColor: '#ff0000',
+                    fillOpacity: color(popDensity),
+                    strokeColor: '#ff0000',
+                    strokeWeight: 0.5,
+                    strokeOpacity: 0.5
+                };
+                return styleOptions;
+            });
+        }
+        function getScaleLinearSvg1() {
+            var max = 0.0, min = 999999.0;
+            for (code of cityList) {
+                var popDensity = fetchPopData(code)
+                    / cityDataHash[code].area;
+                if (popDensity > max) {
+                    max = popDensity;
+                }
+                if (popDensity < min) {
+                    min = popDensity;
+                }
+            }
+            return d3.scaleLinear().domain([min, max]).range([0, 0.8]);
+        }
+
+        function fetchPopData(code) {
+            var sum = 0.0;
+            for (var age = slider_age_lower; age < slider_age_upper; age += 5) {
+                var currentHash = popDataHash[code][slider_date][slider_time];
+                var ageString;
+                if (age >= 10 && age < 70) {
+                    ageString = "_" + age + "_" + (age + 4);
+                }
+                if (age < 10) {
+                    ageString = "_0_9";
+                    age = 5;
+                }
+                if (age >= 70) {
+                    ageString = "_70_over";
+                }
+                if (select_box_gender == "total") {
+                    sum += parseFloat(currentHash["pop_" + "man" + ageString]);
+                    sum += parseFloat(currentHash["pop_" + "woman" + ageString]);
+                }
+                else {
+                    sum += parseFloat(currentHash[("pop_" + gender + ageString)]);
+                }
+            }
+            return sum;
+        }
+
+        function refreshSvg2() {
+            var color = getScaleLinearSvg2();
+            map2.data.setStyle(function (feature) {
+                var code = switchCodeHash[feature.property_code];
+                var foodDensity = fetchFoodData(code)
+                    / getArea(code);
+                console.log(foodDensity);
+                var styleOptions = {
+                    fillColor: '#ff0000',
+                    fillOpacity: color(foodDensity),
+                    strokeColor: '#ff0000',
+                    strokeWeight: 0.5,
+                    strokeOpacity: 0.5
+                };
+                return styleOptions;
+            });
+        }
+
+        function getScaleLinearSvg2() {
+            var max = 0.0, min = 999999.0;
+            for (code of cityList) {
+                var food = fetchFoodData(code);
+                food /= getArea(code);
+                if (food > max) {
+                    max = food;
+                }
+                if (food < min) {
+                    min = food;
+                }
+            }
+            return d3.scaleLinear().domain([min, max]).range([0, 0.8]);
+        }
+
+        function fetchFoodData(code) {
+            if (select_box_food < 10) {
+                return foodDataHash[code]["menu_" + select_box_food]
+            }
+            else if (select_box_food == 10) {
+                return billiard_hash[code];
+            }
+        }
+
+        const MIN_CITY_AREA = 1.0;
+        function getArea(code) {
+            if (cityDataHash[code].area < MIN_CITY_AREA) {
+                return MIN_CITY_AREA;
+            }
+            else {
+                return cityDataHash[code].area;
+            }
+        }
+
+        function startDataLayer() {
+            regionGeoJson.forEach(function (geojson) {
+                map.data.addGeoJson(geojson);
+                map2.data.addGeoJson(geojson);
+            });
+
+            map.data.addListener('click', function (e) {
+            });
+
+            map.data.addListener('mouseover', function (e) {
+                var feature = e.feature,
+                    regionName = feature.property_name_eng;
+                tooltip.css({
+                    display: '',
+                    left: e.offset.x,
+                    top: e.offset.y
+                }).text(regionName);
+
+                map.data.overrideStyle(feature, {
+                    strokeWeight: 2,
+                    strokeOpacity: 1
+                });
+            });
+
+            map.data.addListener('mouseout', function (e) {
+                tooltip.hide().empty();
+                map.data.revertStyle();
+            });
+
+            map2.data.addListener('click', function (e) {
+            });
+
+            map2.data.addListener('mouseover', function (e) {
+                var feature = e.feature,
+                    regionName = feature.property_name_eng;
+                tooltip2.css({
+                    display: '',
+                    left: e.offset.x,
+                    top: e.offset.y
+                }).text(regionName);
+
+                map2.data.overrideStyle(feature, {
+                    strokeWeight: 2,
+                    strokeOpacity: 1
+                });
+            });
+
+            map2.data.addListener('mouseout', function (e) {
+                tooltip2.hide().empty();
+                map2.data.revertStyle();
+            });
+        }
+
+        async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
+            try {
+                cityAreaHash = {};
+                var areaData = await d3.tsv("./area.tsv");
+                for (d of areaData) {
+                    cityAreaHash[[d.CT_NM + " " + d.H_DNG_NM]] = d.AREA;
+                }
+                var codeData = await d3.json("./code.json");
+                for (d of codeData) {
+                    cityDataHash[d["H_DNG_CD"]] = {
+                        name: d["DO_NM"] + " " + d["CT_NM"] + " " + d["H_DNG_NM"],
+                        area: cityAreaHash[d["CT_NM"] + " " + d["H_DNG_NM"]]
+                    };
+                    cityList.push(d["H_DNG_CD"]);
+                    switchCodeHash[d["H_SDNG_CD"]] = d["H_DNG_CD"];
+                }
+                var popData = await d3.tsv("./pop_data.csv");
+                for (d of popData) {
+                    if (popDataHash[d.code] == undefined) {
+                        popDataHash[d.code] = {};
+                    }
+                    if (popDataHash[d.code][d.date] == undefined) {
+                        popDataHash[d.code][d.date] = {};
+                    }
+                    popDataHash[d.code][d.date][d.time] = {
+                        pop_total: d.pop_total,
+                        pop_man_0_9: d.pop_man_0_9, pop_man_10_14: d.pop_man_10_14,
+                        pop_man_15_19: d.pop_man_15_19, pop_man_20_24: d.pop_man_20_24,
+                        pop_man_25_29: d.pop_man_25_29, pop_man_30_34: d.pop_man_30_34,
+                        pop_man_35_39: d.pop_man_35_39, pop_man_40_44: d.pop_man_40_44,
+                        pop_man_45_49: d.pop_man_45_49, pop_man_50_54: d.pop_man_50_54,
+                        pop_man_55_59: d.pop_man_55_59, pop_man_60_64: d.pop_man_60_64,
+                        pop_man_65_69: d.pop_man_65_69, pop_man_70_over: d.pop_man_70_over,
+                        pop_woman_0_9: d.pop_woman_0_9, pop_woman_10_14: d.pop_woman_10_14,
+                        pop_woman_15_19: d.pop_woman_15_19, pop_woman_20_24: d.pop_woman_20_24,
+                        pop_woman_25_29: d.pop_woman_25_29, pop_woman_30_34: d.pop_woman_30_34,
+                        pop_woman_35_39: d.pop_woman_35_39, pop_woman_40_44: d.pop_woman_40_44,
+                        pop_woman_45_49: d.pop_woman_45_49, pop_woman_50_54: d.pop_woman_50_54,
+                        pop_woman_55_59: d.pop_woman_55_59, pop_woman_60_64: d.pop_woman_60_64,
+                        pop_woman_65_69: d.pop_woman_65_69, pop_woman_70_over: d.pop_woman_70_over
+                    };
+                }
+                var foodData = await d3.json("./food_data.json");
+                for (d of foodData) {
+                    foodDataHash[d.id] = d;
+                }
+            } catch (e) {
+                return e;
+            }
+            return false;
+        }
+    </script>
+</body>
