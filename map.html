@@ -207,8 +207,14 @@
 				if (slider_age_lower == 5) {
 					slider_age_lower = 0;
 				}
-				document.getElementById('sliderAge_value').innerHTML =
-					"age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
+				if(slider_age_upper == 75){
+                    document.getElementById('sliderAge_value').innerHTML =
+                        "age: " + slider_age_lower + " ～ " + "歳";
+                }
+                else{
+                    document.getElementById('sliderAge_value').innerHTML =
+                        "age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
+                }
 				refreshSvg1();
 			});
 			selectGender.onchange = () => {
