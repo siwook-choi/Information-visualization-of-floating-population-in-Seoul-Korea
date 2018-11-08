@@ -63,8 +63,15 @@
             zoom: 6
         });
 
+        var mapDiv2 = document.getElementById("div3");
+        var map2 = new naver.maps.Map(mapDiv2, {
+            zoom: 6
+        });
+
         var tooltip = $('<div style="position:absolute;z-index:1000;padding:5px 10px;background-color:#fff;border:solid 2px #000;font-size:14px;pointer-events:none;display:none;"></div>');
         tooltip.appendTo(map.getPanes().floatPane);
+        var tooltip2 = $('<div style="position:absolute;z-index:1000;padding:5px 10px;background-color:#fff;border:solid 2px #000;font-size:14px;pointer-events:none;display:none;"></div>');
+        tooltip2.appendTo(map2.getPanes().floatPane);
 
         var regionGeoJson = [];
         var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
@@ -161,11 +168,11 @@
                 if (slider_age_lower == 5) {
                     slider_age_lower = 0;
                 }
-                if(slider_age_upper == 75){
+                if (slider_age_upper == 75) {
                     document.getElementById('sliderAge_value').innerHTML =
                         "age: " + slider_age_lower + " ～ " + "歳";
                 }
-                else{
+                else {
                     document.getElementById('sliderAge_value').innerHTML =
                         "age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
                 }
@@ -188,6 +195,7 @@
 
             startDataLayer();
             refreshSvg1();
+            refreshSvg2();
         }
 
         function refreshSvg1() {
@@ -200,8 +208,8 @@
                     fillColor: '#ff0000',
                     fillOpacity: color(popDensity),
                     strokeColor: '#ff0000',
-                    strokeWeight: 2,
-                    strokeOpacity: 0.4
+                    strokeWeight: 0.5,
+                    strokeOpacity: 0.5
                 };
                 return styleOptions;
             });
@@ -247,11 +255,62 @@
             return sum;
         }
 
-        function refreshSvg2() { }
+        function refreshSvg2() {
+            var color = getScaleLinearSvg2();
+            map2.data.setStyle(function (feature) {
+                var code = switchCodeHash[feature.property_code];
+                var foodDensity = fetchFoodData(code)
+                    / getArea(code);
+                console.log(foodDensity);
+                var styleOptions = {
+                    fillColor: '#ff0000',
+                    fillOpacity: color(foodDensity),
+                    strokeColor: '#ff0000',
+                    strokeWeight: 0.5,
+                    strokeOpacity: 0.5
+                };
+                return styleOptions;
+            });
+        }
+
+        function getScaleLinearSvg2() {
+            var max = 0.0, min = 999999.0;
+            for (code of cityList) {
+                var food = fetchFoodData(code);
+                food /= getArea(code);
+                if (food > max) {
+                    max = food;
+                }
+                if (food < min) {
+                    min = food;
+                }
+            }
+            return d3.scaleLinear().domain([min, max]).range([0, 0.8]);
+        }
+
+        function fetchFoodData(code) {
+            if (select_box_food < 10) {
+                return foodDataHash[code]["menu_" + select_box_food]
+            }
+            else if (select_box_food == 10) {
+                return billiard_hash[code];
+            }
+        }
+
+        const MIN_CITY_AREA = 1.0;
+        function getArea(code) {
+            if (cityDataHash[code].area < MIN_CITY_AREA) {
+                return MIN_CITY_AREA;
+            }
+            else {
+                return cityDataHash[code].area;
+            }
+        }
 
         function startDataLayer() {
             regionGeoJson.forEach(function (geojson) {
                 map.data.addGeoJson(geojson);
+                map2.data.addGeoJson(geojson);
             });
 
             map.data.addListener('click', function (e) {
@@ -267,7 +326,7 @@
                 }).text(regionName);
 
                 map.data.overrideStyle(feature, {
-                    strokeWeight: 4,
+                    strokeWeight: 2,
                     strokeOpacity: 1
                 });
             });
@@ -275,6 +334,29 @@
             map.data.addListener('mouseout', function (e) {
                 tooltip.hide().empty();
                 map.data.revertStyle();
+            });
+
+            map2.data.addListener('click', function (e) {
+            });
+
+            map2.data.addListener('mouseover', function (e) {
+                var feature = e.feature,
+                    regionName = feature.property_name_eng;
+                tooltip2.css({
+                    display: '',
+                    left: e.offset.x,
+                    top: e.offset.y
+                }).text(regionName);
+
+                map2.data.overrideStyle(feature, {
+                    strokeWeight: 2,
+                    strokeOpacity: 1
+                });
+            });
+
+            map2.data.addListener('mouseout', function (e) {
+                tooltip2.hide().empty();
+                map2.data.revertStyle();
             });
         }
 
