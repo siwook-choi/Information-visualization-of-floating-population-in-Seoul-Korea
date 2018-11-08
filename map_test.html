@@ -53,7 +53,6 @@
                     <option value="7">カフェ</option>
                     <option value="8">バイキング</option>
                     <option value="9">etc</option>
-                    <option value="10">billiard</option>
                 </select>
             </p>
             <p id="sliderOpacity2_value"></p>
@@ -342,9 +341,6 @@
         function fetchFoodData(code) {
             if (select_box_food < 10) {
                 return foodDataHash[code]["menu_" + select_box_food]
-            }
-            else if (select_box_food == 10) {
-                return billiard_hash[code];
             }
         }
 
