@@ -17,7 +17,7 @@
 			  position: absolute;			
 			  text-align: center;			
 			  width: 160px;					
-			  height: 50px;					
+			  height: 60px;					
 			  padding: 2px;				
 			  font: 12px sans-serif;		
 			  background: lightsteelblue;	
@@ -54,6 +54,7 @@
 		</div>
 		<div id='div3'></div>
 		<div id='div4'>
+			<p>検索品目</p>
 			<p class="restaurant-select" style="width:200px;">
 				<select id="selectRestaurantType">
 					<option value="1" selected="selected">韓国料理</option>
@@ -110,8 +111,28 @@
 			var seoul_gu = topojson.feature(seoul_gu_data, seoul_gu_data.objects.seoul_municipalities_geo);
 			var projection_gu = d3.geoMercator().center([127.05, 37.56]).translate([width / 2, height / 2]).scale(60000);
 			var path_gu = d3.geoPath().projection(projection_gu);
+			
 
+			var KorEngHash = {};
 			var gu_data = await d3.json("./gu_data.json");
+			KorEngHash["서울"] = "Seoul";
+			for (gu of gu_data){
+				KorEngHash[gu["SIG_KOR_NM"]] = gu["SIG_ENG_NM"];
+			}
+
+			for (dong of seoul_dong.features){
+				KorEngHash[dong.properties.name] = dong.properties.name_eng;
+			}
+			
+			function changeKorEng(name){
+				var name_eng = "";
+				var name_split = name.split(" ");
+				name_eng += KorEngHash[name_split[0]] + " "
+					+ KorEngHash[name_split[1]] + "<br>"
+					+ KorEngHash[name_split[2]];
+				return name_eng;
+			}
+
 
 			var billiard_hash = {};
 			await initBilliard(billiard_hash);
@@ -226,7 +247,7 @@
 						div1.transition()
 							.duration(100)
 							.style("opacity", .9);
-						div1.html(cityDataHash[code].name + "<br>人口密度(人/km^2):<br>"
+						div1.html(changeKorEng(cityDataHash[code].name) + "<br>人口密度(人/km^2):<br>"
 							+ (fetchPopData(code, slider_date, slider_time, slider_age_lower, slider_age_upper, select_box_gender)
 								/ cityDataHash[code].area).toFixed(2))
 							.style("left", (d3.event.pageX) + "px")
@@ -312,7 +333,7 @@
 						div2.transition()
 							.duration(100)
 							.style("opacity", .9);
-						div2.html(cityDataHash[code].name + "<br>飲食店の密度(店/km^2): "
+						div2.html(changeKorEng(cityDataHash[code].name) + "<br>飲食店の密度(店/km^2): "
 							+ (food).toFixed(2))
 							.style("left", (d3.event.pageX) + "px")
 							.style("top", (d3.event.pageY - 28) + "px");
@@ -377,20 +398,17 @@
 				dong_hash[dong["DONG_OLD"]] = dong["H_DNG_CD"].substr(0, 8);
 				billiard_hash[dong["H_DNG_CD"].substr(0, 8)] = 0;
 			}
-			console.log(dong_hash);
 			var billiard_data = await d3.json("./billiard_data.json");
 			for (billiard of billiard_data["DATA"]) {
 				if (billiard["addr_old"] != null) {
 					var addr = billiard["addr_old"].split(" ");
 					if(billiard_hash[dong_hash[addr[2]]]==undefined || billiard_hash[dong_hash[addr[2]]]==null){
-						console.log(addr);
 					}
 					else{
 						billiard_hash[dong_hash[addr[2]]]++;
 					}
 				}
 			}
-			console.log(billiard_hash);
 		}
 		async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
 			try {
