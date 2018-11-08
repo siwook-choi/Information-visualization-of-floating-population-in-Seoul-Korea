@@ -43,6 +43,7 @@
 			<p id="sliderTime"></p>
 			<p id="sliderAge_value"></p>
 			<p id="sliderAge"></p>
+			<p>性別</p>
 			<p class="gender-select" style="width:200px;">
 				<select id="selectGender">
 					<option value="1" selected="selected">Total</option>
@@ -381,7 +382,12 @@
 			for (billiard of billiard_data["DATA"]) {
 				if (billiard["addr_old"] != null) {
 					var addr = billiard["addr_old"].split(" ");
-					billiard_hash[dong_hash[addr[2]]]++;
+					if(billiard_hash[dong_hash[addr[2]]]==undefined || billiard_hash[dong_hash[addr[2]]]==null){
+						console.log(addr);
+					}
+					else{
+						billiard_hash[dong_hash[addr[2]]]++;
+					}
 				}
 			}
 			console.log(billiard_hash);
