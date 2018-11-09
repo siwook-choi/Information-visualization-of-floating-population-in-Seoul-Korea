@@ -171,9 +171,33 @@
 
             sliderDate.noUiSlider.on('update', function (value, handle) {
                 var date = parseInt(value);
+                var day, color = "black";
+                if(date % 7 == 6){
+                    color = 'blue';
+                }
+                else if(date % 7 == 0){
+                    color = 'red';
+                }
+                else if(date == 3 || date == 9){
+                    color = 'red'
+                }
+                
+                switch(date%7){
+                    case 0: day="日"; break;
+                    case 1: day="月"; break;
+                    case 2: day="火"; break;
+                    case 3: day="水"; break;
+                    case 4: day="木"; break;
+                    case 5: day="金"; break;
+                    case 6: day="土"; break;
+                }
 
                 document.getElementById('sliderDate_value').innerHTML =
-                    "Date: 2018年10月" + date + "日";
+                    "Date: 2018年10月" + date + "日 " + "<span style = 'color:" + color + "'>"
+                    + day + "</span>";
+
+                console.log(document.getElementById('sliderDate_value').innerHTML);
+                console.log(color);
                 if (date < 10) {
                     slider_date = "2018100" + date;
                 }
