@@ -12,7 +12,7 @@
     <style>
         .wrapper{
 			  display: grid;
-			  grid-template-columns: 700px 200px;
+			  grid-template-columns: 700px 200px 600px;
 			  grid-template-rows: 400px 400px;
               grid-row-gap: 30px;
               grid-column-gap: 30px;
@@ -42,7 +42,8 @@
             <p id="sliderOpacity1"></p>
         </div>
         <div id='div3'></div>
-        <div id='div4'>
+        <div id='div4'></div>
+        <div id='div5'>
             <p>検索品目</p>
             <p class="restaurant-select" style="width:200px;">
                 <select id="selectRestaurantType">
@@ -60,17 +61,26 @@
             <p id="sliderOpacity2_value"></p>
             <p id="sliderOpacity2"></p>
         </div>
+        <div id='div6'></div>
     </div>
 
     <script type="text/javascript">
         var mapDiv = document.getElementById("div1");
         var map = new naver.maps.Map(mapDiv, {
-            zoom: 6
+            zoom: 6,
+            zoomControl: true,
+            zoomControlOptions: {
+                position: naver.maps.Position.TOP_RIGHT
+            }
         });
 
-        var mapDiv2 = document.getElementById("div3");
+        var mapDiv2 = document.getElementById("div4");
         var map2 = new naver.maps.Map(mapDiv2, {
-            zoom: 6
+            zoom: 6,
+            zoomControl: true,
+            zoomControlOptions: {
+                position: naver.maps.Position.TOP_RIGHT
+            }
         });
 
         var tooltip = $('<div style="position:absolute;z-index:1000;padding:5px 10px;background-color:#fff;border:solid 2px #000;font-size:14px;pointer-events:none;display:none;"></div>');
@@ -286,7 +296,7 @@
                     fillOpacity: color(popDensity),
                     strokeColor: '#ff0000',
                     strokeWeight: 0.5,
-                    strokeOpacity: 0.5
+                    strokeOpacity: 0.8
                 };
                 return styleOptions;
             });
@@ -343,7 +353,7 @@
                     fillOpacity: color(foodDensity),
                     strokeColor: '#ff0000',
                     strokeWeight: 0.5,
-                    strokeOpacity: 0.5
+                    strokeOpacity: 0.8
                 };
                 return styleOptions;
             });
