@@ -8,6 +8,7 @@
     <script src="./lib/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?clientId=Fj9YAAdNpZn3oybty5ZB&submodules=geocoder"></script>
     <script src="./lib/distribute/nouislider.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
     <link rel="stylesheet" href="./lib/distribute/nouislider.min.css">
     <style>
         .wrapper{
@@ -41,7 +42,9 @@
             <p id="sliderOpacity1_value"></p>
             <p id="sliderOpacity1"></p>
         </div>
-        <div id='div3'></div>
+        <div id='div3'>
+            <p id='container' style="width: 100%; height: 100%;margin:0;padding:0;"></p>
+        </div>
         <div id='div4'></div>
         <div id='div5'>
             <p>検索品目</p>
@@ -97,8 +100,8 @@
             slider_age_upper,
             select_box_gender = "total",
             select_box_food = 4;
-            slider_opacity1=0.8,
-            slider_opacity2=0.8;
+        slider_opacity1 = 0.8,
+            slider_opacity2 = 0.8;
 
         init();
 
@@ -119,171 +122,171 @@
             refreshSvg1();
             refreshSvg2();
 
-            function initUI(){
-            var sliderDate = document.getElementById('sliderDate');
-            var sliderTime = document.getElementById('sliderTime');
-            var sliderAge = document.getElementById('sliderAge');
-            var selectGender = document.getElementById('selectGender');
-            var selectRestaurantType = document.getElementById('selectRestaurantType');
-            var sliderOpacity1 = document.getElementById('sliderOpacity1');
-            var sliderOpacity2 = document.getElementById('sliderOpacity2');
+            function initUI() {
+                var sliderDate = document.getElementById('sliderDate');
+                var sliderTime = document.getElementById('sliderTime');
+                var sliderAge = document.getElementById('sliderAge');
+                var selectGender = document.getElementById('selectGender');
+                var selectRestaurantType = document.getElementById('selectRestaurantType');
+                var sliderOpacity1 = document.getElementById('sliderOpacity1');
+                var sliderOpacity2 = document.getElementById('sliderOpacity2');
 
-            noUiSlider.create(sliderDate, {
-                start: 12,
-                connect: false,
-                step: 1,
-                range: {
-                    'min': 1,
-                    'max': 24
-                }
-            });
+                noUiSlider.create(sliderDate, {
+                    start: 12,
+                    connect: false,
+                    step: 1,
+                    range: {
+                        'min': 1,
+                        'max': 24
+                    }
+                });
 
-            noUiSlider.create(sliderTime, {
-                start: 12,
-                connect: false,
-                step: 1,
-                range: {
-                    'min': 0,
-                    'max': 23
-                }
-            });
+                noUiSlider.create(sliderTime, {
+                    start: 12,
+                    connect: false,
+                    step: 1,
+                    range: {
+                        'min': 0,
+                        'max': 23
+                    }
+                });
 
-            noUiSlider.create(sliderAge, {
-                start: [20, 40],
-                connect: true,
-                step: 5,
-                margin: 5,
-                range: {
-                    'min': 0,
-                    'max': 75
-                }
-            });
+                noUiSlider.create(sliderAge, {
+                    start: [20, 40],
+                    connect: true,
+                    step: 5,
+                    margin: 5,
+                    range: {
+                        'min': 0,
+                        'max': 75
+                    }
+                });
 
-            noUiSlider.create(sliderOpacity1, {
-                start: 80,
-                connect: false,
-                step: 10,
-                range: {
-                    'min': 0,
-                    'max': 100
-                }
-            })
+                noUiSlider.create(sliderOpacity1, {
+                    start: 80,
+                    connect: false,
+                    step: 10,
+                    range: {
+                        'min': 0,
+                        'max': 100
+                    }
+                })
 
-            noUiSlider.create(sliderOpacity2, {
-                start: 80,
-                connect: false,
-                step: 10,
-                range: {
-                    'min': 0,
-                    'max': 100
-                }
-            })
+                noUiSlider.create(sliderOpacity2, {
+                    start: 80,
+                    connect: false,
+                    step: 10,
+                    range: {
+                        'min': 0,
+                        'max': 100
+                    }
+                })
 
-            sliderDate.noUiSlider.on('update', function (value, handle) {
-                var date = parseInt(value);
-                var day, color = "black";
-                if(date % 7 == 6){
-                    color = 'blue';
-                }
-                else if(date % 7 == 0){
-                    color = 'red';
-                }
-                else if(date == 3 || date == 9){
-                    color = 'red'
-                }
-                
-                switch(date%7){
-                    case 0: day="日"; break;
-                    case 1: day="月"; break;
-                    case 2: day="火"; break;
-                    case 3: day="水"; break;
-                    case 4: day="木"; break;
-                    case 5: day="金"; break;
-                    case 6: day="土"; break;
-                }
+                sliderDate.noUiSlider.on('update', function (value, handle) {
+                    var date = parseInt(value);
+                    var day, color = "black";
+                    if (date % 7 == 6) {
+                        color = 'blue';
+                    }
+                    else if (date % 7 == 0) {
+                        color = 'red';
+                    }
+                    else if (date == 3 || date == 9) {
+                        color = 'red'
+                    }
 
-                document.getElementById('sliderDate_value').innerHTML =
-                    "Date: 2018年10月" + date + "日 " + "<span style = 'color:" + color + "'>"
-                    + day + "</span>";
+                    switch (date % 7) {
+                        case 0: day = "日"; break;
+                        case 1: day = "月"; break;
+                        case 2: day = "火"; break;
+                        case 3: day = "水"; break;
+                        case 4: day = "木"; break;
+                        case 5: day = "金"; break;
+                        case 6: day = "土"; break;
+                    }
 
-                console.log(document.getElementById('sliderDate_value').innerHTML);
-                console.log(color);
-                if (date < 10) {
-                    slider_date = "2018100" + date;
-                }
-                else {
-                    slider_date = "201810" + date;
-                }
+                    document.getElementById('sliderDate_value').innerHTML =
+                        "Date: 2018年10月" + date + "日 " + "<span style = 'color:" + color + "'>"
+                        + day + "</span>";
 
-                refreshSvg1();
-            });
+                    console.log(document.getElementById('sliderDate_value').innerHTML);
+                    console.log(color);
+                    if (date < 10) {
+                        slider_date = "2018100" + date;
+                    }
+                    else {
+                        slider_date = "201810" + date;
+                    }
 
-            sliderTime.noUiSlider.on('update', function (value, handle) {
-                var time = parseInt(value);
-                document.getElementById('sliderTime_value').innerHTML =
-                    "Time: " + time + "時";
-                if (time < 10) {
-                    slider_time = "0" + time;
-                }
-                else {
-                    slider_time = "" + time;
-                }
-                refreshSvg1();
-            });
+                    refreshSvg1();
+                });
 
-            sliderAge.noUiSlider.on('update', function (values, handle) {
-                slider_age_lower = parseInt(values[0]);
-                slider_age_upper = parseInt(values[1]);
-                if (slider_age_lower == 5) {
-                    slider_age_lower = 0;
-                }
-                if (slider_age_upper == 75) {
-                    document.getElementById('sliderAge_value').innerHTML =
-                        "Age: " + slider_age_lower + " ～ " + "歳";
-                }
-                else {
-                    document.getElementById('sliderAge_value').innerHTML =
-                        "Age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
-                }
-                refreshSvg1();
-            });
+                sliderTime.noUiSlider.on('update', function (value, handle) {
+                    var time = parseInt(value);
+                    document.getElementById('sliderTime_value').innerHTML =
+                        "Time: " + time + "時";
+                    if (time < 10) {
+                        slider_time = "0" + time;
+                    }
+                    else {
+                        slider_time = "" + time;
+                    }
+                    refreshSvg1();
+                });
 
-            sliderOpacity1.noUiSlider.on('update', function(value, handle){
-                var opacity = parseInt(value);
-                document.getElementById("sliderOpacity1_value").innerHTML = 
-                    "Opacity: " + opacity + "%";
-                slider_opacity1 = opacity/100;
-                refreshSvg1();
-            });
+                sliderAge.noUiSlider.on('update', function (values, handle) {
+                    slider_age_lower = parseInt(values[0]);
+                    slider_age_upper = parseInt(values[1]);
+                    if (slider_age_lower == 5) {
+                        slider_age_lower = 0;
+                    }
+                    if (slider_age_upper == 75) {
+                        document.getElementById('sliderAge_value').innerHTML =
+                            "Age: " + slider_age_lower + " ～ " + "歳";
+                    }
+                    else {
+                        document.getElementById('sliderAge_value').innerHTML =
+                            "Age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
+                    }
+                    refreshSvg1();
+                });
 
-            sliderOpacity2.noUiSlider.on('update', function(value, handle){
-                var opacity = parseInt(value);
-                document.getElementById("sliderOpacity2_value").innerHTML = 
-                    "Opacity: " + opacity + "%";
-                slider_opacity2 = opacity/100;
-                refreshSvg2();
-            });
+                sliderOpacity1.noUiSlider.on('update', function (value, handle) {
+                    var opacity = parseInt(value);
+                    document.getElementById("sliderOpacity1_value").innerHTML =
+                        "Opacity: " + opacity + "%";
+                    slider_opacity1 = opacity / 100;
+                    refreshSvg1();
+                });
 
-            selectGender.onchange = () => {
-                var gender = parseInt(selectGender.value);
-                console.log(gender);
-                switch (gender) {
-                    case 1: select_box_gender = "total"; break;
-                    case 2: select_box_gender = "man"; break;
-                    case 3: select_box_gender = "woman"; break;
-                }
-                refreshSvg1();
-            };
-            
-            selectRestaurantType.onchange = () => {
-                var restaurant = parseInt(selectRestaurantType.value);
-                select_box_food = restaurant;
-                refreshSvg2();
-            };
+                sliderOpacity2.noUiSlider.on('update', function (value, handle) {
+                    var opacity = parseInt(value);
+                    document.getElementById("sliderOpacity2_value").innerHTML =
+                        "Opacity: " + opacity + "%";
+                    slider_opacity2 = opacity / 100;
+                    refreshSvg2();
+                });
+
+                selectGender.onchange = () => {
+                    var gender = parseInt(selectGender.value);
+                    console.log(gender);
+                    switch (gender) {
+                        case 1: select_box_gender = "total"; break;
+                        case 2: select_box_gender = "man"; break;
+                        case 3: select_box_gender = "woman"; break;
+                    }
+                    refreshSvg1();
+                };
+
+                selectRestaurantType.onchange = () => {
+                    var restaurant = parseInt(selectRestaurantType.value);
+                    select_box_food = restaurant;
+                    refreshSvg2();
+                };
+            }
         }
-        }
 
-        
+
 
         function refreshSvg1() {
             var color = getScaleLinearSvg1();
@@ -418,7 +421,73 @@
                 tooltip.hide().empty();
                 map.data.revertStyle();
             });
+            map.data.addListener('click', function (e) {
+                document.getElementById('container').innerHTML = "";
+                var feature = e.feature;
+                var currentHash = popDataHash[switchCodeHash[feature.property_code]][slider_date][slider_time];
+                console.log(slider_date);
+                console.log(switchCodeHash[feature.property_code]);
+                console.log(parseFloat(currentHash[("pop_man_30_34")]));
+                var data = anychart.data.set([["0-9", parseFloat(currentHash[("pop_man_0_9")]), parseFloat(currentHash[("pop_woman_0_9")])],
+                    ["10-14", parseFloat(currentHash[("pop_man_10_14")]), parseFloat(currentHash[("pop_woman_10_14")])],
+                    ["15-19", parseFloat(currentHash[("pop_man_15_19")]), parseFloat(currentHash[("pop_woman_15_19")])],
+                    ["20-24", parseFloat(currentHash[("pop_man_20_24")]), parseFloat(currentHash[("pop_woman_20_24")])],
+                    ["25-29", parseFloat(currentHash[("pop_man_25_29")]), parseFloat(currentHash[("pop_woman_25_29")])],
+                    ["30-34", parseFloat(currentHash[("pop_man_30_34")]), parseFloat(currentHash[("pop_woman_30_34")])],
+                    ["35-39", parseFloat(currentHash[("pop_man_35_39")]), parseFloat(currentHash[("pop_woman_35_39")])],
+                    ["40-44", parseFloat(currentHash[("pop_man_40_44")]), parseFloat(currentHash[("pop_woman_40_44")])],
+                    ["45-49", parseFloat(currentHash[("pop_man_45_49")]), parseFloat(currentHash[("pop_woman_45_49")])],
+                    ["50-54", parseFloat(currentHash[("pop_man_50_54")]), parseFloat(currentHash[("pop_woman_50_54")])],
+                    ["55-59", parseFloat(currentHash[("pop_man_55_59")]), parseFloat(currentHash[("pop_woman_55_59")])],
+                    ["60-64", parseFloat(currentHash[("pop_man_60_64")]), parseFloat(currentHash[("pop_woman_60_64")])],
+                    ["65-69", parseFloat(currentHash[("pop_man_65_69")]), parseFloat(currentHash[("pop_woman_65_69")])],
+                    ["70++", parseFloat(currentHash[("pop_man_70_over")]), parseFloat(currentHash[("pop_woman_70_over")])]]);
+                var seriesData_1 = data.mapAs({ x: 0, value: 1 });
+                var seriesData_2 = data.mapAs({ x: 0, value: 2 });
+                // create a chart
+                var chart = anychart.column();
 
+                // create the first series, set the data and name
+                var series1 = chart.column(seriesData_1);
+                series1.name("man");
+
+                // configure the visual settings of the first series
+                series1.normal().fill("#00cc99", 0.3);
+                series1.hovered().fill("#00cc99", 0.1);
+                series1.selected().fill("#00cc99", 0.5);
+                series1.normal().stroke("#00cc99", 1, "10 5", "round");
+                series1.hovered().stroke("#00cc99", 2, "10 5", "round");
+                series1.selected().stroke("#00cc99", 4, "10 5", "round");
+
+                // create the second series, set the data and name
+                var series2 = chart.column(seriesData_2);
+                series2.name("woman");
+
+                // configure the visual settings of the second series
+                series2.normal().fill("#0066cc", 0.3);
+                series2.hovered().fill("#0066cc", 0.1);
+                series2.selected().fill("#0066cc", 0.5);
+                series2.normal().hatchFill("forward-diagonal", "#0066cc", 1, 15);
+                series2.hovered().hatchFill("forward-diagonal", "#0066cc", 1, 15);
+                series2.selected().hatchFill("forward-diagonal", "#0066cc", 1, 15);
+                series2.normal().stroke("#0066cc");
+                series2.hovered().stroke("#0066cc", 2);
+                series2.selected().stroke("#0066cc", 4);
+
+                // set the chart title
+                chart.title(feature.property_name_eng+" population");
+
+                // set the titles of the axes
+                chart.xAxis().title("Age");
+                chart.yAxis().title("Population");
+
+                // set the container id
+                chart.container("container");
+
+                // initiate drawing the chart
+                chart.draw();
+
+            });
             map2.data.addListener('click', function (e) {
             });
 
