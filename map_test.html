@@ -422,13 +422,15 @@
                 map.data.revertStyle();
             });
             map.data.addListener('click', function (e) {
-                document.getElementById('container').innerHTML = "";
-                var feature = e.feature;
-                var currentHash = popDataHash[switchCodeHash[feature.property_code]][slider_date][slider_time];
-                console.log(slider_date);
-                console.log(switchCodeHash[feature.property_code]);
-                console.log(parseFloat(currentHash[("pop_man_30_34")]));
-                var data = anychart.data.set([["0-9", parseFloat(currentHash[("pop_man_0_9")]), parseFloat(currentHash[("pop_woman_0_9")])],
+                drawAgeChart();
+                function drawAgeChart() {
+                    document.getElementById('container').innerHTML = "";
+                    var feature = e.feature;
+                    var currentHash = popDataHash[switchCodeHash[feature.property_code]][slider_date][slider_time];
+                    console.log(slider_date);
+                    console.log(switchCodeHash[feature.property_code]);
+                    console.log(parseFloat(currentHash[("pop_man_30_34")]));
+                    var data = anychart.data.set([["0-9", parseFloat(currentHash[("pop_man_0_9")]), parseFloat(currentHash[("pop_woman_0_9")])],
                     ["10-14", parseFloat(currentHash[("pop_man_10_14")]), parseFloat(currentHash[("pop_woman_10_14")])],
                     ["15-19", parseFloat(currentHash[("pop_man_15_19")]), parseFloat(currentHash[("pop_woman_15_19")])],
                     ["20-24", parseFloat(currentHash[("pop_man_20_24")]), parseFloat(currentHash[("pop_woman_20_24")])],
@@ -442,51 +444,57 @@
                     ["60-64", parseFloat(currentHash[("pop_man_60_64")]), parseFloat(currentHash[("pop_woman_60_64")])],
                     ["65-69", parseFloat(currentHash[("pop_man_65_69")]), parseFloat(currentHash[("pop_woman_65_69")])],
                     ["70++", parseFloat(currentHash[("pop_man_70_over")]), parseFloat(currentHash[("pop_woman_70_over")])]]);
-                var seriesData_1 = data.mapAs({ x: 0, value: 1 });
-                var seriesData_2 = data.mapAs({ x: 0, value: 2 });
-                // create a chart
-                var chart = anychart.column();
+                    var seriesData_1 = data.mapAs({ x: 0, value: 1 });
+                    var seriesData_2 = data.mapAs({ x: 0, value: 2 });
+                    // create a chart
+                    var chart = anychart.column();
 
-                // create the first series, set the data and name
-                var series1 = chart.column(seriesData_1);
-                series1.name("man");
+                    // create the first series, set the data and name
+                    var series1 = chart.column(seriesData_1);
+                    series1.name("man");
 
-                // configure the visual settings of the first series
-                series1.normal().fill("#00cc99", 0.3);
-                series1.hovered().fill("#00cc99", 0.1);
-                series1.selected().fill("#00cc99", 0.5);
-                series1.normal().stroke("#00cc99", 1, "10 5", "round");
-                series1.hovered().stroke("#00cc99", 2, "10 5", "round");
-                series1.selected().stroke("#00cc99", 4, "10 5", "round");
+                    // configure the visual settings of the first series
+                    series1.normal().fill("#0000ff", 0.3);
+                    series1.hovered().fill("#0000ff", 0.1);
+                    series1.selected().fill("#0000ff", 0.5);
+                    series1.normal().stroke("#0000ff", 1);
+                    series1.hovered().stroke("#0000ff", 2);
+                    series1.selected().stroke("0000ff", 4);
 
-                // create the second series, set the data and name
-                var series2 = chart.column(seriesData_2);
-                series2.name("woman");
+                    // create the second series, set the data and name
+                    var series2 = chart.column(seriesData_2);
+                    series2.name("woman");
 
-                // configure the visual settings of the second series
-                series2.normal().fill("#0066cc", 0.3);
-                series2.hovered().fill("#0066cc", 0.1);
-                series2.selected().fill("#0066cc", 0.5);
-                series2.normal().hatchFill("forward-diagonal", "#0066cc", 1, 15);
-                series2.hovered().hatchFill("forward-diagonal", "#0066cc", 1, 15);
-                series2.selected().hatchFill("forward-diagonal", "#0066cc", 1, 15);
-                series2.normal().stroke("#0066cc");
-                series2.hovered().stroke("#0066cc", 2);
-                series2.selected().stroke("#0066cc", 4);
+                    // configure the visual settings of the second series
+                    series2.normal().fill("#ff0000", 0.3);
+                    series2.hovered().fill("#ff0000", 0.1);
+                    series2.selected().fill("#ff0000", 0.5);
+                    series2.normal().hatchFill("forward-diagonal", "ff0000", 1, 15);
+                    series2.hovered().hatchFill("forward-diagonal", "#ff0000", 1, 15);
+                    series2.selected().hatchFill("forward-diagonal", "#ff0000", 1, 15);
+                    series2.normal().stroke("#ff0000");
+                    series2.hovered().stroke("#ff0000", 2);
+                    series2.selected().stroke("#ff0000", 4);
 
-                // set the chart title
-                chart.title(feature.property_name_eng+" population");
+                    // set the chart title
+                    chart.title(feature.property_name_eng + " population");
 
-                // set the titles of the axes
-                chart.xAxis().title("Age");
-                chart.yAxis().title("Population");
+                    // set the titles of the axes
+                    chart.xAxis().title("Age");
+                    chart.yAxis().title("Population Density(People/km^2)");
 
-                // set the container id
-                chart.container("container");
+                    // set the container id
+                    chart.container("container");
 
-                // initiate drawing the chart
-                chart.draw();
+                    chart.legend(true);
+                    chart.legend().itemsSourceMode("series");
+                    chart.legend().itemsLayout("vertical");
+                    chart.legend().position("right");
+                    chart.legend().align("top");
 
+                    // initiate drawing the chart
+                    chart.draw();
+                }
             });
             map2.data.addListener('click', function (e) {
             });
