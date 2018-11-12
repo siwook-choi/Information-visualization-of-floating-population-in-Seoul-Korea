@@ -6,7 +6,6 @@
     <meta charset="utf-8">
     <script src="./lib/d3.js" charset="utf-8"></script>
     <script src="./lib/jquery-3.3.1.min.js"></script>
-    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?clientId=Fj9YAAdNpZn3oybty5ZB&submodules=geocoder"></script>
     <script src="./lib/distribute/nouislider.min.js"></script>
     <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXDIubYrnITomJ7Iou89lsYZCVEQify4A&callback=initMap"></script>
@@ -49,10 +48,9 @@
                     <option value="1">Date</option>
                     <option value="2">Time</option>
                     <option value="3" selected="selected">Age</option>
-                    <option value="4">Restaurant</option>
                 </select>
             </p>
-            <p id='container' style="width: 100%; height: 100%;margin:0;padding:0;"></p>
+            <p id='container' style="width: 100%; height: 90%;margin:0;padding:0;"></p>
         </div>
         <div id='div4'></div>
         <div id='div5'>
@@ -81,27 +79,21 @@
 
     <script type="text/javascript">
         var mapDiv = document.getElementById("div1");
-        var map = new naver.maps.Map(mapDiv, {
-            zoom: 6,
-            zoomControl: true,
-            zoomControlOptions: {
-                position: naver.maps.Position.TOP_RIGHT
-            }
-        });
+        var map = new google.maps.Map(mapDiv, {
+            center: { lat: 37.541, lng: 126.986 },
+            zoom: 11
+        })
 
         var mapDiv2 = document.getElementById("div4");
-        var map2 = new naver.maps.Map(mapDiv2, {
-            zoom: 6,
-            zoomControl: true,
-            zoomControlOptions: {
-                position: naver.maps.Position.TOP_RIGHT
-            }
-        });
+        var map2 = new google.maps.Map(mapDiv2, {
+            center: { lat: 37.541, lng: 126.986 },
+            zoom: 11
+        })
 
         var tooltip = $('<div style="position:absolute;z-index:1000;padding:5px 10px;background-color:#fff;border:solid 2px #000;font-size:14px;pointer-events:none;display:none;"></div>');
-        tooltip.appendTo(map.getPanes().floatPane);
+        tooltip.appendTo(mapDiv);
         var tooltip2 = $('<div style="position:absolute;z-index:1000;padding:5px 10px;background-color:#fff;border:solid 2px #000;font-size:14px;pointer-events:none;display:none;"></div>');
-        tooltip2.appendTo(map2.getPanes().floatPane);
+        tooltip2.appendTo(mapDiv2);
 
         var regionGeoJson = [];
         var cityDataHash = {}, popDataHash = {}, foodDataHash = {}, switchCodeHash = {}, cityList = [];
@@ -234,7 +226,7 @@
                     refreshSvg1();
                     refreshChart();
                 });
-                sliderDate.noUiSlider.on('end', ()=>{
+                sliderDate.noUiSlider.on('end', () => {
                     refreshChart();
                 });
 
@@ -250,7 +242,7 @@
                     }
                     refreshSvg1();
                 });
-                sliderTime.noUiSlider.on('end', ()=>{
+                sliderTime.noUiSlider.on('end', () => {
                     refreshChart();
                 });
 
@@ -270,7 +262,7 @@
                     }
                     refreshSvg1();
                 });
-                sliderAge.noUiSlider.on('end', ()=>{
+                sliderAge.noUiSlider.on('end', () => {
                     refreshChart();
                 });
 
@@ -321,10 +313,10 @@
             var color = getScaleLinearSvg1();
             var popDensityArray = [];
             map.data.setStyle(function (feature) {
-                var code = switchCodeHash[feature.property_code];
+                var code = switchCodeHash[feature.l.code];
                 var popDensity = fetchPopData(code)
                     / cityDataHash[code].area;
-                popDensityArray.push({ "id": code, "name": feature.property_name_eng, "value": popDensity });
+                popDensityArray.push({ "id": code, "name": feature.l.name_eng, "value": popDensity });
                 var styleOptions = {
                     fillColor: '#ff0000',
                     fillOpacity: color(popDensity),
@@ -356,10 +348,14 @@
                 })
                 .attr("x", 10)
                 .attr("fill", "black")
-                .attr("stroke", "none")
+                .attr("stroke", "none");
+                console.log(map);
+                /*
                 .on("mouseover", function (d) {
+                    console.log(map.data);
                     for (feature of map.data._features) {
-                        if (feature.property_name_eng === d.name) {
+                        
+                        if (feature.name_eng === d.name) {
                             map.data.overrideStyle(feature, {
                                 strokeColor: '#0033cc',
                                 strokeWeight: 3,
@@ -389,6 +385,7 @@
                         }
                     }
                 });
+                */
         }
 
         function getScaleLinearSvg1() {
@@ -435,7 +432,7 @@
         function refreshSvg2() {
             var color = getScaleLinearSvg2();
             map2.data.setStyle(function (feature) {
-                var code = switchCodeHash[feature.property_code];
+                var code = switchCodeHash[feature.l.code];
                 var foodDensity = fetchFoodData(code)
                     / getArea(code);
                 var styleOptions = {
@@ -464,21 +461,6 @@
             return d3.scaleLinear().domain([min, max]).range([0, slider_opacity2]);
         }
 
-        function getScaleLinearFoodData(restaurantType) {
-            var max = 0.0, min = 999999.0;
-            for (code of cityList) {
-                var food = foodDataHash[code]["menu_" + restaurantType];
-                food /= getArea(code);
-                if (food > max) {
-                    max = food;
-                }
-                if (food < min) {
-                    min = food;
-                }
-            }
-            return d3.scaleLinear().domain([min, max]).range([0, 1]);
-        }
-
         function fetchFoodData(code) {
             if (select_box_food < 10) {
                 return foodDataHash[code]["menu_" + select_box_food]
@@ -496,21 +478,18 @@
         }
 
         function startDataLayer() {
-            regionGeoJson.forEach(function (geojson) {
-                map.data.addGeoJson(geojson);
-                map2.data.addGeoJson(geojson);
-            });
-            map.data.addListener('click', function (e) {
-            });
+            map.data.loadGeoJson("./lib/seoul_submunicipalities_topo_simple.geojson");
+            map2.data.loadGeoJson("./lib/seoul_submunicipalities_topo_simple.geojson");
 
             map.data.addListener('mouseover', function (e) {
-                var feature = e.feature,
-                    regionName = feature.property_name_eng;
+                var feature = e.feature.l,
+                    code = switchCodeHash[feature.code];
+                    regionName = feature.name_eng;
                 tooltip.css({
                     display: '',
-                    left: e.offset.x,
-                    top: e.offset.y
-                }).html(regionName + "<br>人口密度:" + fetchPopData(switchCodeHash[feature.property_code]).toFixed(2) + "人/km^2");
+                    left: e.xa.clientX,
+                    top: e.xa.clientY
+                }).html(regionName + "<br>人口密度:" + fetchPopData(code).toFixed(2) + "人/km^2");
 
                 map.data.overrideStyle(feature, {
                     strokeColor: '#0033cc',
@@ -525,20 +504,21 @@
             });
 
             map.data.addListener('click', function (e) {
-                chart_displayed = e.feature;
+                chart_displayed = e.feature.l;
                 refreshChart();
             });
             map2.data.addListener('click', function (e) {
             });
 
             map2.data.addListener('mouseover', function (e) {
-                var feature = e.feature,
-                    regionName = feature.property_name_eng;
-                tooltip2.css({
+                var feature = e.feature.l,
+                    code = switchCodeHash[feature.code];
+                    regionName = feature.name_eng;
+                    tooltip.css({
                     display: '',
-                    left: e.offset.x,
-                    top: e.offset.y
-                }).html(regionName + "<br>飲食店の密度:" + fetchFoodData(switchCodeHash[feature.property_code]).toFixed(2) + "店/km^2");
+                    left: e.xa.clientX,
+                    top: e.xa.clientY
+                }).html(regionName + "<br>飲食店の密度:" + fetchFoodData(code).toFixed(2) + "店/km^2");
 
                 map2.data.overrideStyle(feature, {
                     strokeColor: '#0033cc',
@@ -564,7 +544,6 @@
                     case 1: drawDateChart(); break;
                     case 2: drawTimeChart(); break;
                     case 3: drawAgeChart(); break;
-                    case 4: drawRestaurantChart(); break;
                     default: console.log("invalid select_box_chart value: " + select_box_chart); break;
                 }
             }
@@ -572,7 +551,7 @@
 
         function drawDateChart() {
             document.getElementById('container').innerHTML = "";
-            var code = switchCodeHash[chart_displayed.property_code];
+            var code = switchCodeHash[chart_displayed.code];
             var data = anychart.data.set();
             for (var i = 1; i <= 23; i++) {
                 var date;
@@ -595,7 +574,7 @@
                 else {
                     date = "201810" + i;
                 }
-                data.append({ x: i.toString(), value: fetchPopData(code, date), fill: color, stroke: color});
+                data.append({ x: i.toString(), value: fetchPopData(code, date), fill: color, stroke: color });
             }
             // create a chart
 
@@ -603,7 +582,7 @@
             chart.column(data);
 
             // set the chart title
-            chart.title(chart_displayed.property_name_eng + " Population by Date");
+            chart.title(chart_displayed.name_eng + " Population by Date");
 
             // set the titles of the axes
             chart.xAxis().title("Date(2018年10月)");
@@ -648,7 +627,7 @@
 
         function drawTimeChart() {
             document.getElementById('container').innerHTML = "";
-            var code = switchCodeHash[chart_displayed.property_code];
+            var code = switchCodeHash[chart_displayed.code];
             var data = anychart.data.set();
             for (var i = 0; i <= 23; i++) {
                 var time;
@@ -665,7 +644,7 @@
             chart.column(data);
 
             // set the chart title
-            chart.title(chart_displayed.property_name_eng + " Population by time");
+            chart.title(chart_displayed.name_eng + " Population by time");
 
             // set the titles of the axes
             chart.xAxis().title("Time(hour)");
@@ -680,7 +659,7 @@
 
         function drawAgeChart() {
             document.getElementById('container').innerHTML = "";
-            var currentHash = popDataHash[switchCodeHash[chart_displayed.property_code]][slider_date][slider_time];
+            var currentHash = popDataHash[switchCodeHash[chart_displayed.code]][slider_date][slider_time];
             var data = anychart.data.set([["0-9", parseFloat(currentHash[("pop_man_0_9")]), parseFloat(currentHash[("pop_woman_0_9")])],
             ["10-14", parseFloat(currentHash[("pop_man_10_14")]), parseFloat(currentHash[("pop_woman_10_14")])],
             ["15-19", parseFloat(currentHash[("pop_man_15_19")]), parseFloat(currentHash[("pop_woman_15_19")])],
@@ -728,7 +707,7 @@
             series2.selected().stroke("#ff0000", 4);
 
             // set the chart title
-            chart.title(chart_displayed.property_name_eng + " Population by Age");
+            chart.title(chart_displayed.name_eng + " Population by Age");
 
             // set the titles of the axes
             chart.xAxis().title("Age");
@@ -745,49 +724,6 @@
 
             // initiate drawing the chart
             chart.draw();
-        }
-        
-        function drawRestaurantChart(){
-            document.getElementById('container').innerHTML = "";
-            var code = switchCodeHash[chart_displayed.property_code];
-            var color=[];
-            var foodDensity=[];
-            for(i=1;i<=9;i++){
-                color.push(getScaleLinearFoodData(i));
-                foodDensity.push(foodDataHash[code]["menu_" + i]/ getArea(code));
-            }
-            var data = [["韓国料理",color[0](foodDensity[0])],
-            ["洋食",color[1](foodDensity[1])],
-            ["アジア料理",color[2](foodDensity[2])],
-            ["和食",color[3](foodDensity[3])],
-            ["中国料理",color[4](foodDensity[4])],
-            ["屋台料理",color[5](foodDensity[5])],
-            ["カフェ",color[6](foodDensity[6])],
-            ["バイキング",color[7](foodDensity[7])],
-            ["etc",color[8](foodDensity[8])]
-        ];
-         // create a chart
-
-            chart = anychart.column();
-            chart.column(data);
-
-            // set the chart title
-            chart.title(chart_displayed.property_name_eng + " Restaurant Density");
-
-            // set the titles of the axes
-            chart.xAxis().title("Restaurant Density");
-            chart.yAxis().title("Restaurant type");
-
-            // set the container id
-            chart.container("container");
-            chart.legend().itemsLayout("vertical");
-            chart.legend().position("right");
-            chart.legend().align("top");
-            chart.legend().enabled(true);
-
-            // initiate drawing the chart
-            chart.draw();
-            
         }
 
         async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
