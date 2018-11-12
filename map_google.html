@@ -32,7 +32,7 @@
             <p id="sliderAge_value"></p>
             <p id="sliderAge"></p>
             <p>Gender</p>
-            <p class="gender-select">
+            <p class="gender-select" autocomplete="off">
                 <select id="selectGender">
                     <option value="1" selected="selected">Total</option>
                     <option value="2">Men</option>
@@ -44,10 +44,11 @@
         </div>
         <div id='div3'>
             <p>
-                <select id="selectChart">
+                <select id="selectChart" autocomplete="off">
                     <option value="1">Date</option>
                     <option value="2">Time</option>
                     <option value="3" selected="selected">Age</option>
+                    <option value="4">Restaurant</option>
                 </select>
             </p>
             <p id='container' style="width: 100%; height: 90%;margin:0;padding:0;"></p>
@@ -56,7 +57,7 @@
         <div id='div5'>
             <p>検索品目</p>
             <p class="restaurant-select">
-                <select id="selectRestaurantType">
+                <select id="selectRestaurantType" autocomplete="off">
                     <option value="1" selected="selected">韓国料理</option>
                     <option value="2">洋食</option>
                     <option value="3">アジア料理</option>
@@ -353,7 +354,7 @@
                 .enter()
                 .append("text")
                 .text(function (d, i) {
-                    return (i + 1) + "位：" + d.name + " 人口密度：" + d.value.toFixed(2);
+                    return (i + 1) + "位：" + d.name;
                 })
                 .attr("y", function (d, i) {
                     return (i * 35) + 20;
@@ -470,9 +471,21 @@
             return d3.scaleLinear().domain([min, max]).range([0, slider_opacity2]);
         }
 
-        function fetchFoodData(code) {
+        function getScaleLinearFoodData(restaurantType) {
+            var max = 0.0;
+            for (code of cityList) {
+                var food = fetchFoodData(code, restaurantType);
+                food /= getArea(code);
+                if (food > max) {
+                    max = food;
+                }
+            }
+            return d3.scaleLinear().domain([0, max]).range([0, 1]);
+        }
+
+        function fetchFoodData(code, food=select_box_food) {
             if (select_box_food < 10) {
-                return foodDataHash[code]["menu_" + select_box_food]
+                return foodDataHash[code]["menu_" + food]
             }
         }
 
@@ -556,6 +569,7 @@
                     case 1: drawDateChart(); break;
                     case 2: drawTimeChart(); break;
                     case 3: drawAgeChart(); break;
+                    case 4: drawRestaurantChart(); break;
                     default: console.log("invalid select_box_chart value: " + select_box_chart); break;
                 }
             }
@@ -736,6 +750,51 @@
 
             // initiate drawing the chart
             chart.draw();
+        }
+
+        function drawRestaurantChart(){
+            document.getElementById('container').innerHTML = "";
+            var code = switchCodeHash[chart_displayed.getProperty('code')];
+            var color=[];
+            var foodDensity=[];
+            for(i=1;i<=9;i++){
+                color.push(getScaleLinearFoodData(i));
+                foodDensity.push(foodDataHash[code]["menu_" + i]/ getArea(code));
+            }
+            var data = [["韓国料理",color[0](foodDensity[0])],
+            ["洋食",color[1](foodDensity[1])],
+            ["アジア料理",color[2](foodDensity[2])],
+            ["和食",color[3](foodDensity[3])],
+            ["中国料理",color[4](foodDensity[4])],
+            ["屋台料理",color[5](foodDensity[5])],
+            ["カフェ",color[6](foodDensity[6])],
+            ["バイキング",color[7](foodDensity[7])],
+            ["etc",color[8](foodDensity[8])]
+        ];
+         // create a chart
+
+            chart = anychart.column();
+            chart.column(data);
+
+            // set the chart title
+            chart.title(chart_displayed.property_name_eng + " Restaurant Density");
+
+            // set the titles of the axes
+            chart.xAxis().title("Restaurant Type");
+            chart.yAxis().title("Restaurant Density(scale to 0~1)");
+
+            chart.xAxis().labels().fontSize(9);
+
+            // set the container id
+            chart.container("container");
+            chart.legend().itemsLayout("vertical");
+            chart.legend().position("right");
+            chart.legend().align("top");
+            chart.legend().enabled(true);
+
+            // initiate drawing the chart
+            chart.draw();
+            
         }
 
         async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {

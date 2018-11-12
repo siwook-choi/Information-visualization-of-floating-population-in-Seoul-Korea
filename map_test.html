@@ -465,23 +465,20 @@
         }
 
         function getScaleLinearFoodData(restaurantType) {
-            var max = 0.0, min = 999999.0;
+            var max = 0.0;
             for (code of cityList) {
-                var food = foodDataHash[code]["menu_" + restaurantType];
+                var food = fetchFoodData(code, restaurantType);
                 food /= getArea(code);
                 if (food > max) {
                     max = food;
                 }
-                if (food < min) {
-                    min = food;
-                }
             }
-            return d3.scaleLinear().domain([min, max]).range([0, 1]);
+            return d3.scaleLinear().domain([0, max]).range([0, 1]);
         }
 
-        function fetchFoodData(code) {
+        function fetchFoodData(code, food=select_box_food) {
             if (select_box_food < 10) {
-                return foodDataHash[code]["menu_" + select_box_food]
+                return foodDataHash[code]["menu_" + food]
             }
         }
 
@@ -775,8 +772,10 @@
             chart.title(chart_displayed.property_name_eng + " Restaurant Density");
 
             // set the titles of the axes
-            chart.xAxis().title("Restaurant Density");
-            chart.yAxis().title("Restaurant type");
+            chart.xAxis().title("Restaurant Type");
+            chart.yAxis().title("Restaurant Density(scale to 0~1)");
+
+            chart.xAxis().labels().fontSize(9);
 
             // set the container id
             chart.container("container");
