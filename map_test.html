@@ -71,7 +71,10 @@
             <p id="sliderOpacity2_value"></p>
             <p id="sliderOpacity2"></p>
         </div>
-        <div id='div6'></div>
+        <div id='div6'>
+            <p>人口密度の順位</p>
+            <div id="rank" style="height:100%;"></div>
+        </div>
     </div>
 
     <script type="text/javascript">
@@ -334,9 +337,9 @@
                 return b["value"] - a["value"];
             });
 
-            d3.select("#div6").selectAll("*").remove();
+            d3.select("#rank").selectAll("*").remove();
 
-            d3.select("#div6").append("svg")
+            d3.select("#rank").append("svg")
                 .attr("width", "100%")
                 .attr("height", "100%")
                 .selectAll("text")
@@ -347,9 +350,9 @@
                     return (i + 1) + "位：" + d.name + " 人口密度：" + d.value.toFixed(2);
                 })
                 .attr("y", function (d, i) {
-                    return (i * 35) + 60;
+                    return (i * 35) + 20;
                 })
-                .attr("x", 20)
+                .attr("x", 10)
                 .attr("fill", "black")
                 .attr("stroke", "none")
                 .on("mouseover", function (d) {
