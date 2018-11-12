@@ -229,6 +229,9 @@
                     refreshSvg1();
                     refreshChart();
                 });
+                sliderDate.noUiSlider.on('end', ()=>{
+                    refreshChart();
+                });
 
                 sliderTime.noUiSlider.on('update', function (value, handle) {
                     var time = parseInt(value);
@@ -241,6 +244,8 @@
                         slider_time = "" + time;
                     }
                     refreshSvg1();
+                });
+                sliderTime.noUiSlider.on('end', ()=>{
                     refreshChart();
                 });
 
@@ -259,6 +264,8 @@
                             "Age: " + slider_age_lower + " ～ " + (slider_age_upper - 1) + "歳";
                     }
                     refreshSvg1();
+                });
+                sliderAge.noUiSlider.on('end', ()=>{
                     refreshChart();
                 });
 
@@ -287,6 +294,9 @@
                         case 3: select_box_gender = "woman"; break;
                     }
                     refreshSvg1();
+                };
+
+                selectGender.onmouseup = () => {
                     refreshChart();
                 };
 
