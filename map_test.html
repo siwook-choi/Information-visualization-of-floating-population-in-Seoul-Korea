@@ -304,10 +304,12 @@
 
         function refreshSvg1() {
             var color = getScaleLinearSvg1();
+            var popDensityArray = [];
             map.data.setStyle(function (feature) {
                 var code = switchCodeHash[feature.property_code];
                 var popDensity = fetchPopData(code)
                     / cityDataHash[code].area;
+                popDensityArray.push({ "id": code, "name": feature.property_name_eng, "value": popDensity });
                 var styleOptions = {
                     fillColor: '#ff0000',
                     fillOpacity: color(popDensity),
@@ -317,6 +319,59 @@
                 };
                 return styleOptions;
             });
+
+            popDensityArray.sort(function (a, b) {
+                return b["value"] - a["value"];
+            });
+
+            d3.select("#div6").selectAll("*").remove();
+
+            d3.select("#div6").append("svg")
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .selectAll("text")
+                .data(popDensityArray.slice(0, 10))
+                .enter()
+                .append("text")
+                .text(function (d, i) {
+                    return (i + 1) + "位：" + d.name + " 人口密度：" + d.value.toFixed(2);
+                })
+                .attr("y", function (d, i) {
+                    return (i * 35) + 60;
+                })
+                .attr("x", 20)
+                .attr("fill", "black")
+                .attr("stroke", "none")
+                .on("mouseover", function (d) {
+                    for (feature of map.data._features) {
+                        if (feature.property_name_eng === d.name) {
+                            map.data.overrideStyle(feature, {
+                                strokeWeight: 3,
+                                strokeOpacity: 1
+                            });
+                        }
+                    }
+                    for (feature of map2.data._features) {
+                        if (feature.property_name_eng === d.name) {
+                            map2.data.overrideStyle(feature, {
+                                strokeWeight: 3,
+                                strokeOpacity: 1
+                            });
+                        }
+                    }
+                })
+                .on("mouseout", function (d) {
+                    map.data.revertStyle();
+                    map2.data.revertStyle();
+                })
+                .on("click", function (d) {
+                    for (feature of map.data._features) {
+                        if (feature.property_name_eng === d.name) {
+                            chart_displayed = feature;
+                            refreshChart();
+                        }
+                    }
+                });
         }
 
         function getScaleLinearSvg1() {
@@ -334,7 +389,7 @@
             return d3.scaleLinear().domain([min, max]).range([0, slider_opacity1]);
         }
 
-        function fetchPopData(code, date=slider_date, time=slider_time, age_lower=slider_age_lower, age_upper=slider_age_upper, gender=select_box_gender) {
+        function fetchPopData(code, date = slider_date, time = slider_time, age_lower = slider_age_lower, age_upper = slider_age_upper, gender = select_box_gender) {
             var sum = 0.0;
             for (var age = age_lower; age < age_upper; age += 5) {
                 var currentHash = popDataHash[code][date][time];
@@ -413,7 +468,6 @@
                 map.data.addGeoJson(geojson);
                 map2.data.addGeoJson(geojson);
             });
-
             map.data.addListener('click', function (e) {
             });
 
@@ -427,7 +481,7 @@
                 }).html(regionName + "<br>人口密度:" + fetchPopData(switchCodeHash[feature.property_code]).toFixed(2) + "人/km^2");
 
                 map.data.overrideStyle(feature, {
-                    strokeWeight: 2,
+                    strokeWeight: 3,
                     strokeOpacity: 1
                 });
             });
@@ -451,10 +505,10 @@
                     display: '',
                     left: e.offset.x,
                     top: e.offset.y
-                }).html(regionName + "<br>人口密度:" + fetchFoodData(switchCodeHash[feature.property_code]).toFixed(2) + "店/km^2");
+                }).html(regionName + "<br>飲食店の密度:" + fetchFoodData(switchCodeHash[feature.property_code]).toFixed(2) + "店/km^2");
 
                 map2.data.overrideStyle(feature, {
-                    strokeWeight: 2,
+                    strokeWeight: 3,
                     strokeOpacity: 1
                 });
             });
@@ -468,7 +522,7 @@
         var chart;
         function refreshChart() {
             if (chart_displayed) {
-                if(chart != undefined || chart != null){
+                if (chart != undefined || chart != null) {
                     chart.dispose();
                     chart = null;
                 }
@@ -480,36 +534,36 @@
                 }
             }
         }
-        
+
         function drawDateChart() {
             document.getElementById('container').innerHTML = "";
             var code = switchCodeHash[chart_displayed.property_code];
             var data = anychart.data.set();
-            for (var i = 1; i <= 23; i++){
+            for (var i = 1; i <= 23; i++) {
                 var date;
                 var day, color;
-                    if (i % 7 == 6) {
-                        color = 'blue';
-                    }
-                    else if (i % 7 == 0) {
-                        color = 'red';
-                    }
-                    else if (i == 3 || i == 9) {
-                        color = 'orange'
-                    }
-                    else{
-                        color = 'grey';
-                    }
-                if(i < 10) {
+                if (i % 7 == 6) {
+                    color = 'blue';
+                }
+                else if (i % 7 == 0) {
+                    color = 'red';
+                }
+                else if (i == 3 || i == 9) {
+                    color = 'orange'
+                }
+                else {
+                    color = 'grey';
+                }
+                if (i < 10) {
                     date = "2018100" + i;
                 }
-                else{
+                else {
                     date = "201810" + i;
                 }
-                data.append({x: i.toString(), value: fetchPopData(code, date), fill: color});
+                data.append({ x: i.toString(), value: fetchPopData(code, date), fill: color });
             }
             // create a chart
-            
+
             chart = anychart.column();
             chart.column(data);
 
@@ -523,7 +577,7 @@
             // set the container id
             chart.container("container");
 
-            chart.legend().itemsFormatter(function(){
+            chart.legend().itemsFormatter(function () {
                 legendItems = [];
                 legendItems.push({
                     text: "平日",
@@ -547,7 +601,7 @@
                 });
                 return legendItems;
             });
-            
+
             chart.legend().itemsLayout("vertical");
             chart.legend().position("right");
             chart.legend().align("top");
@@ -561,15 +615,15 @@
             document.getElementById('container').innerHTML = "";
             var code = switchCodeHash[chart_displayed.property_code];
             var data = anychart.data.set();
-            for (var i = 0; i <= 23; i++){
+            for (var i = 0; i <= 23; i++) {
                 var time;
-                if(i<10){
+                if (i < 10) {
                     time = "0" + i;
                 }
-                else{
+                else {
                     time = i.toString();
                 }
-                data.append({x: i.toString(), value: fetchPopData(code, slider_date, time)});
+                data.append({ x: i.toString(), value: fetchPopData(code, slider_date, time) });
             }
             // create a chart
             chart = anychart.column();
@@ -584,7 +638,7 @@
 
             // set the container id
             chart.container("container");
-            
+
             // initiate drawing the chart
             chart.draw();
         }
