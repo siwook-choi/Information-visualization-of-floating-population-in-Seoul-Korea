@@ -8,7 +8,7 @@
     <script src="./lib/jquery-3.3.1.min.js"></script>
     <script src="./lib/distribute/nouislider.min.js"></script>
     <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXDIubYrnITomJ7Iou89lsYZCVEQify4A"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXDIubYrnITomJ7Iou89lsYZCVEQify4A&language=ja&region=JP"></script>
     <link rel="stylesheet" href="./lib/distribute/nouislider.min.css">
     <style>
         .wrapper{
@@ -81,13 +81,19 @@
         var mapDiv = document.getElementById("div1");
         var map = new google.maps.Map(mapDiv, {
             center: { lat: 37.541, lng: 126.986 },
-            zoom: 11
+            zoom: 11,
+            disableDefaultUI: true,
+            zoomControl: true,
+            fullscreenControl: true
         })
 
         var mapDiv2 = document.getElementById("div4");
         var map2 = new google.maps.Map(mapDiv2, {
             center: { lat: 37.541, lng: 126.986 },
-            zoom: 11
+            zoom: 11,
+            disableDefaultUI: true,
+            zoomControl: true,
+            fullscreenControl: true
         })
 
         var tooltip = $('<div style="position:absolute;z-index:1000;padding:5px 10px;background-color:#fff;border:solid 2px #000;font-size:14px;pointer-events:none;display:none;"></div>');
@@ -284,7 +290,6 @@
 
                 selectGender.onchange = () => {
                     var gender = parseInt(selectGender.value);
-                    console.log(gender);
                     switch (gender) {
                         case 1: select_box_gender = "total"; break;
                         case 2: select_box_gender = "man"; break;
@@ -337,7 +342,6 @@
                 return b["value"] - a["value"];
             });
 
-            console.log(popDensityArray);
 
             d3.select("#rank").selectAll("*").remove();
 
@@ -359,7 +363,6 @@
                 .attr("stroke", "none")
                 .on("mouseover", function (d) {
                     map.data.forEach((feature)=>{
-                        console.log(feature);
                         if(feature.getProperty('name_eng') === d.name){
                             map.data.revertStyle();
                             map.data.overrideStyle(feature, {
@@ -370,7 +373,6 @@
                         }
                     });
                     map2.data.forEach((feature)=>{
-                        console.log(feature);
                         if(feature.getProperty('name_eng') === d.name){
                             map2.data.revertStyle();
                             map2.data.overrideStyle(feature, {
@@ -496,8 +498,8 @@
                 regionName = feature.getProperty('name_eng');
                 tooltip.css({
                     display: '',
-                    left: e.xa.clientX,
-                    top: e.xa.clientY
+                    left: e.xa.layerX,
+                    top: e.xa.layerY
                 }).html(regionName + "<br>人口密度:" + fetchPopData(code).toFixed(2) + "人/km^2");
 
                 map.data.overrideStyle(e.feature, {
@@ -522,11 +524,12 @@
             map2.data.addListener('mouseover', function (e) {
                 var feature = e.feature,
                     code = switchCodeHash[feature.getProperty('code')];
+                console.log(e);
                 regionName = feature.getProperty('name_eng');
-                tooltip.css({
+                tooltip2.css({
                     display: '',
-                    left: e.xa.clientX,
-                    top: e.xa.clientY
+                    left: e.xa.layerX,
+                    top: e.xa.layerY
                 }).html(regionName + "<br>飲食店の密度:" + fetchFoodData(code).toFixed(2) + "店/km^2");
 
                 map2.data.overrideStyle(e.feature, {
