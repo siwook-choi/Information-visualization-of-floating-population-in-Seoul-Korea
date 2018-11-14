@@ -336,7 +336,21 @@
                 var code = switchCodeHash[feature.properties.code];
                 var popDensity = fetchPopData(code)
                     / cityDataHash[code].area;
-                popDensityArray.push({ "id": code, "name": feature.properties.name_eng, "value": popDensity });
+                var centerLat = 0, centerLng = 0;
+                for (coordinates of feature.geometry.coordinates[0]) {
+                    centerLng += coordinates[0];
+                    centerLat += coordinates[1];
+                }
+                centerLat /= feature.geometry.coordinates[0].length;
+                centerLng /= feature.geometry.coordinates[0].length;
+
+                popDensityArray.push({
+                    "id": code,
+                    "name": feature.properties.name_eng,
+                    "value": popDensity,
+                    "centerLat": centerLat,
+                    "centerLng": centerLng
+                });
             }
 
             popDensityArray.sort(function (a, b) {
@@ -363,8 +377,8 @@
                 .attr("fill", "black")
                 .attr("stroke", "none")
                 .on("mouseover", function (d) {
-                    map.data.forEach((feature)=>{
-                        if(feature.getProperty('name_eng') === d.name){
+                    map.data.forEach((feature) => {
+                        if (feature.getProperty('name_eng') === d.name) {
                             map.data.revertStyle();
                             map.data.overrideStyle(feature, {
                                 strokeColor: '#0033cc',
@@ -373,8 +387,8 @@
                             });
                         }
                     });
-                    map2.data.forEach((feature)=>{
-                        if(feature.getProperty('name_eng') === d.name){
+                    map2.data.forEach((feature) => {
+                        if (feature.getProperty('name_eng') === d.name) {
                             map2.data.revertStyle();
                             map2.data.overrideStyle(feature, {
                                 strokeColor: '#0033cc',
@@ -389,12 +403,21 @@
                     map2.data.revertStyle();
                 })
                 .on("click", function (d) {
-                    map.data.forEach((feature)=>{
-                        if(feature.getProperty('name_eng') === d.name){
+                    map.data.forEach((feature) => {
+                        if (feature.getProperty('name_eng') === d.name) {
                             chart_displayed = feature;
                             refreshChart();
                         }
                     });
+                    map.setZoom(11);
+                    map2.setZoom(11);
+                    setTimeout(() => {
+                        map.setCenter({ lat: parseFloat(d.centerLat), lng: parseFloat(d.centerLng) });
+                        map2.setCenter({ lat: parseFloat(d.centerLat), lng: parseFloat(d.centerLng) });
+                        map.setZoom(13);
+                        map2.setZoom(13);
+                    }, 500);
+
                 });
         }
 
@@ -480,10 +503,10 @@
                     max = food;
                 }
             }
-            return d3.scaleLinear().domain([0, max]).range([0, 1]);
+            return d3.scaleLinear().domain([0, max]).range([0, 1.0]);
         }
 
-        function fetchFoodData(code, food=select_box_food) {
+        function fetchFoodData(code, food = select_box_food) {
             if (select_box_food < 10) {
                 return foodDataHash[code]["menu_" + food]
             }
@@ -511,8 +534,8 @@
                 regionName = feature.getProperty('name_eng');
                 tooltip.css({
                     display: '',
-                    left: e.xa.layerX,
-                    top: e.xa.layerY
+                    left: e.ya.layerX,
+                    top: e.ya.layerY
                 }).html(regionName + "<br>人口密度:" + fetchPopData(code).toFixed(2) + "人/km^2");
 
                 map.data.overrideStyle(e.feature, {
@@ -537,12 +560,11 @@
             map2.data.addListener('mouseover', function (e) {
                 var feature = e.feature,
                     code = switchCodeHash[feature.getProperty('code')];
-                console.log(e);
                 regionName = feature.getProperty('name_eng');
                 tooltip2.css({
                     display: '',
-                    left: e.xa.layerX,
-                    top: e.xa.layerY
+                    left: e.ya.layerX,
+                    top: e.ya.layerY
                 }).html(regionName + "<br>飲食店の密度:" + fetchFoodData(code).toFixed(2) + "店/km^2");
 
                 map2.data.overrideStyle(e.feature, {
@@ -752,38 +774,40 @@
             chart.draw();
         }
 
-        function drawRestaurantChart(){
+        function drawRestaurantChart() {
             document.getElementById('container').innerHTML = "";
             var code = switchCodeHash[chart_displayed.getProperty('code')];
-            var color=[];
-            var foodDensity=[];
-            for(i=1;i<=9;i++){
+            var color = [];
+            var foodDensity = [];
+            for (i = 1; i <= 9; i++) {
                 color.push(getScaleLinearFoodData(i));
-                foodDensity.push(foodDataHash[code]["menu_" + i]/ getArea(code));
+                foodDensity.push(foodDataHash[code]["menu_" + i] / getArea(code));
             }
-            var data = [["韓国料理",color[0](foodDensity[0])],
-            ["洋食",color[1](foodDensity[1])],
-            ["アジア料理",color[2](foodDensity[2])],
-            ["和食",color[3](foodDensity[3])],
-            ["中国料理",color[4](foodDensity[4])],
-            ["屋台料理",color[5](foodDensity[5])],
-            ["カフェ",color[6](foodDensity[6])],
-            ["バイキング",color[7](foodDensity[7])],
-            ["etc",color[8](foodDensity[8])]
-        ];
-         // create a chart
+            var data = [["韓国料理", color[0](foodDensity[0]).toFixed(2)],
+            ["洋食", color[1](foodDensity[1]).toFixed(2)],
+            ["アジア料理", color[2](foodDensity[2]).toFixed(2)],
+            ["和食", color[3](foodDensity[3]).toFixed(2)],
+            ["中国料理", color[4](foodDensity[4]).toFixed(2)],
+            ["屋台料理", color[5](foodDensity[5]).toFixed(2)],
+            ["カフェ", color[6](foodDensity[6]).toFixed(2)],
+            ["バイキング", color[7](foodDensity[7]).toFixed(2)],
+            ["etc", color[8](foodDensity[8]).toFixed(2)]];
+            console.log(data);
+            // create a chart
 
             chart = anychart.column();
             chart.column(data);
 
             // set the chart title
-            chart.title(chart_displayed.property_name_eng + " Restaurant Density");
+            chart.title(chart_displayed.getProperty('name_eng') + " Restaurant Density");
 
             // set the titles of the axes
             chart.xAxis().title("Restaurant Type");
             chart.yAxis().title("Restaurant Density(scale to 0~1)");
 
             chart.xAxis().labels().fontSize(9);
+            chart.yScale().maximum(1);
+            chart.yScale().minimum(0);
 
             // set the container id
             chart.container("container");
@@ -794,7 +818,7 @@
 
             // initiate drawing the chart
             chart.draw();
-            
+
         }
 
         async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
