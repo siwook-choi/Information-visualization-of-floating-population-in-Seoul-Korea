@@ -512,7 +512,7 @@
             }
         }
 
-        const MIN_CITY_AREA = 0.5;
+        const MIN_CITY_AREA = 0.8;
         function getArea(code) {
             if (cityDataHash[code].area < MIN_CITY_AREA) {
                 return MIN_CITY_AREA;
@@ -536,7 +536,7 @@
                     display: '',
                     left: e.ya.layerX,
                     top: e.ya.layerY
-                }).html(regionName + "<br>人口密度:" + fetchPopData(code).toFixed(2) + "人/km^2");
+                }).html(regionName + "<br>人口密度:" + (fetchPopData(code)/cityDataHash[code].area).toFixed(2) + "人/km^2");
 
                 map.data.overrideStyle(e.feature, {
                     strokeColor: '#0033cc',
@@ -565,7 +565,7 @@
                     display: '',
                     left: e.ya.layerX,
                     top: e.ya.layerY
-                }).html(regionName + "<br>飲食店の密度:" + fetchFoodData(code).toFixed(2) + "店/km^2");
+                }).html(regionName + "<br>飲食店の密度:" + (fetchFoodData(code)/getArea(code)).toFixed(2) + "店/km^2");
 
                 map2.data.overrideStyle(e.feature, {
                     strokeColor: '#0033cc',
