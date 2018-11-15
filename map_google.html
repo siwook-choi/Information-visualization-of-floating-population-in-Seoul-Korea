@@ -512,7 +512,7 @@
             }
         }
 
-        const MIN_CITY_AREA = 0.8;
+        const MIN_CITY_AREA = 1.5;
         function getArea(code) {
             if (cityDataHash[code].area < MIN_CITY_AREA) {
                 return MIN_CITY_AREA;
@@ -555,6 +555,10 @@
                 refreshChart();
             });
             map2.data.addListener('click', function (e) {
+                chart_displayed = e.feature;
+                document.getElementById("selectChart").value = 4;
+                select_box_chart = 4;
+                refreshChart();
             });
 
             map2.data.addListener('mouseover', function (e) {
