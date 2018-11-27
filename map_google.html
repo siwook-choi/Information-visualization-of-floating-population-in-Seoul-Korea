@@ -71,6 +71,9 @@
             </p>
             <p id="sliderOpacity2_value"></p>
             <p id="sliderOpacity2"></p>
+            <p>人口密度と比較
+                <input type="checkbox" id="checkCompare" name="人口密度と比較" autocomplete="off">
+            </p>
         </div>
         <div id='div6'>
             <p>人口密度の順位</p>
@@ -114,7 +117,8 @@
             slider_opacity1 = 0.8,
             slider_opacity2 = 0.8,
             select_box_chart = 3,
-            chart_displayed = false;
+            chart_displayed = false,
+            check_box_compare = false;
 
         init();
 
@@ -144,6 +148,7 @@
                 var sliderOpacity1 = document.getElementById('sliderOpacity1');
                 var sliderOpacity2 = document.getElementById('sliderOpacity2');
                 var selectChart = document.getElementById('selectChart');
+                var checkCompare = document.getElementById('checkCompare');
 
                 noUiSlider.create(sliderDate, {
                     start: 12,
@@ -231,7 +236,6 @@
                     }
 
                     refreshSvg1();
-                    refreshChart();
                 });
                 sliderDate.noUiSlider.on('end', () => {
                     refreshChart();
@@ -312,19 +316,29 @@
                     select_box_chart = parseInt(selectChart.value);
                     refreshChart();
                 }
+
+                checkCompare.onchange = () => {
+                    check_box_compare = checkCompare.checked;
+                    refreshSvg2();
+                }
             }
         }
 
+        var fillOpacityHash = {};
         function refreshSvg1() {
+            if (check_box_compare == true) {
+                refreshSvg2();
+            }
             var color = getScaleLinearSvg1();
             var popDensityArray = [];
             map.data.setStyle(function (feature) {
                 var code = switchCodeHash[feature.getProperty('code')];
                 var popDensity = fetchPopData(code)
                     / cityDataHash[code].area;
+                fillOpacityHash[code] = color(popDensity);
                 var styleOptions = {
                     fillColor: '#ff0000',
-                    fillOpacity: color(popDensity),
+                    fillOpacity: color(popDensity)*slider_opacity1,
                     strokeColor: '#ff0000',
                     strokeWeight: 0.5,
                     strokeOpacity: 0.8
@@ -422,18 +436,15 @@
         }
 
         function getScaleLinearSvg1() {
-            var max = 0.0, min = 999999.0;
+            var max = 0.0;
             for (code of cityList) {
                 var popDensity = fetchPopData(code)
                     / cityDataHash[code].area;
                 if (popDensity > max) {
                     max = popDensity;
                 }
-                if (popDensity < min) {
-                    min = popDensity;
-                }
             }
-            return d3.scaleLinear().domain([min, max]).range([0, slider_opacity1]);
+            return d3.scaleLinear().domain([0, max]).range([0, 1]);
         }
 
         function fetchPopData(code, date = slider_date, time = slider_time, age_lower = slider_age_lower, age_upper = slider_age_upper, gender = select_box_gender) {
@@ -468,30 +479,50 @@
                 var code = switchCodeHash[feature.getProperty('code')];
                 var foodDensity = fetchFoodData(code)
                     / getArea(code);
-                var styleOptions = {
-                    fillColor: '#ff0000',
-                    fillOpacity: color(foodDensity),
-                    strokeColor: '#ff0000',
-                    strokeWeight: 0.5,
-                    strokeOpacity: 0.8
-                };
+                if (check_box_compare == false) {
+                    var styleOptions = {
+                        fillColor: '#ff0000',
+                        fillOpacity: color(foodDensity)*slider_opacity2,
+                        strokeColor: '#ff0000',
+                        strokeWeight: 0.5,
+                        strokeOpacity: 0.8
+                    };
+                }
+                else {
+                    if (color(foodDensity) < fillOpacityHash[code]) {
+                        var styleOptions = {
+                            fillColor: '#0000ff',
+                            fillOpacity: fillOpacityHash[code] - color(foodDensity),
+                            strokeColor: '#ff0000',
+                            strokeWeight: 0.5,
+                            strokeOpacity: 0.8
+                        };
+                    }
+                    else {
+                        var styleOptions = {
+                            fillColor: '#ff0000',
+                            fillOpacity: color(foodDensity) - fillOpacityHash[code],
+                            strokeColor: '#ff0000',
+                            strokeWeight: 0.5,
+                            strokeOpacity: 0.8
+                        };
+                    }
+                }
                 return styleOptions;
             });
+
         }
 
         function getScaleLinearSvg2() {
-            var max = 0.0, min = 999999.0;
+            var max = 0.0;
             for (code of cityList) {
                 var food = fetchFoodData(code);
                 food /= getArea(code);
                 if (food > max) {
                     max = food;
                 }
-                if (food < min) {
-                    min = food;
-                }
             }
-            return d3.scaleLinear().domain([min, max]).range([0, slider_opacity2]);
+            return d3.scaleLinear().domain([0, max]).range([0, 1]);
         }
 
         function getScaleLinearFoodData(restaurantType) {
@@ -536,7 +567,7 @@
                     display: '',
                     left: e.ya.layerX,
                     top: e.ya.layerY
-                }).html(regionName + "<br>人口密度:" + (fetchPopData(code)/cityDataHash[code].area).toFixed(2) + "人/km^2");
+                }).html(regionName + "<br>人口密度:" + (fetchPopData(code) / cityDataHash[code].area).toFixed(2) + "人/km^2");
 
                 map.data.overrideStyle(e.feature, {
                     strokeColor: '#0033cc',
@@ -569,7 +600,7 @@
                     display: '',
                     left: e.ya.layerX,
                     top: e.ya.layerY
-                }).html(regionName + "<br>飲食店の密度:" + (fetchFoodData(code)/getArea(code)).toFixed(2) + "店/km^2");
+                }).html(regionName + "<br>飲食店の密度:" + (fetchFoodData(code) / getArea(code)).toFixed(2) + "店/km^2");
 
                 map2.data.overrideStyle(e.feature, {
                     strokeColor: '#0033cc',
