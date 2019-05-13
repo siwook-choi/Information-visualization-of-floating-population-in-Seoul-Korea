@@ -563,10 +563,18 @@
                 var feature = e.feature,
                     code = switchCodeHash[feature.getProperty('code')];
                 regionName = feature.getProperty('name_eng');
+                var keys = Object.keys(e);
+                var x, y;
+                for(var i = 0; i < keys.length; i++){
+                    if(MouseEvent.prototype.isPrototypeOf(e[keys[i]])){
+                        x = e[keys[i]].layerX;
+                        y = e[keys[i]].layerY;
+                    }
+                }
                 tooltip.css({
                     display: '',
-                    left: e.ya.layerX,
-                    top: e.ya.layerY
+                    left: x,
+                    top: y
                 }).html(regionName + "<br>人口密度:" + (fetchPopData(code) / cityDataHash[code].area).toFixed(2) + "人/km^2");
 
                 map.data.overrideStyle(e.feature, {
@@ -596,10 +604,18 @@
                 var feature = e.feature,
                     code = switchCodeHash[feature.getProperty('code')];
                 regionName = feature.getProperty('name_eng');
+                var keys = Object.keys(e);
+                var x, y;
+                for(var i = 0; i < keys.length; i++){
+                    if(MouseEvent.prototype.isPrototypeOf(e[keys[i]])){
+                        x = e[keys[i]].layerX;
+                        y = e[keys[i]].layerY;
+                    }
+                }
                 tooltip2.css({
                     display: '',
-                    left: e.ya.layerX,
-                    top: e.ya.layerY
+                    left: x,
+                    top: y
                 }).html(regionName + "<br>飲食店の密度:" + (fetchFoodData(code) / getArea(code)).toFixed(2) + "店/km^2");
 
                 map2.data.overrideStyle(e.feature, {
