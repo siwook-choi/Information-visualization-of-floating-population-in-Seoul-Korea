@@ -8,7 +8,7 @@
     <script src="./lib/jquery-3.3.1.min.js"></script>
     <script src="./lib/distribute/nouislider.min.js"></script>
     <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXDIubYrnITomJ7Iou89lsYZCVEQify4A&language=ja&region=JP"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=&language=ja&region=JP"></script>
     <link rel="stylesheet" href="./lib/distribute/nouislider.min.css">
     <style>
         .wrapper{
@@ -875,11 +875,11 @@
         async function initData(cityDataHash, popDataHash, foodDataHash, switchCodeHash, cityList) {
             try {
                 cityAreaHash = {};
-                var areaData = await d3.tsv("./area.tsv");
+                var areaData = await d3.tsv("./data/area.tsv");
                 for (d of areaData) {
                     cityAreaHash[[d.CT_NM + " " + d.H_DNG_NM]] = d.AREA;
                 }
-                var codeData = await d3.json("./code.json");
+                var codeData = await d3.json("./data/code.json");
                 for (d of codeData) {
                     cityDataHash[d["H_DNG_CD"]] = {
                         name: d["DO_NM"] + " " + d["CT_NM"] + " " + d["H_DNG_NM"],
@@ -888,7 +888,7 @@
                     cityList.push(d["H_DNG_CD"]);
                     switchCodeHash[d["H_SDNG_CD"]] = d["H_DNG_CD"];
                 }
-                var popData = await d3.tsv("./pop_data.csv");
+                var popData = await d3.tsv("./data/pop_data.csv");
                 for (d of popData) {
                     if (popDataHash[d.code] == undefined) {
                         popDataHash[d.code] = {};
@@ -914,7 +914,7 @@
                         pop_woman_65_69: d.pop_woman_65_69, pop_woman_70_over: d.pop_woman_70_over
                     };
                 }
-                var foodData = await d3.json("./food_data.json");
+                var foodData = await d3.json("./data/food_data.json");
                 for (d of foodData) {
                     foodDataHash[d.id] = d;
                 }
